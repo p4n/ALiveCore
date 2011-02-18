@@ -390,8 +390,6 @@ void AddSC_boss_heigan();
 void AddSC_boss_gothik();
 void AddSC_boss_thaddius();
 void AddSC_instance_naxxramas();
-void AddSC_boss_malygos();               //The Nexus Eye Of Eternity
-void AddSC_instance_eye_of_eternity();
 void AddSC_boss_magus_telestra();        //The Nexus Nexus
 void AddSC_boss_anomalus();
 void AddSC_boss_ormorok();
@@ -467,18 +465,28 @@ void AddSC_instance_halls_of_reflection();   // Halls of Reflection
 void AddSC_halls_of_reflection();
 void AddSC_boss_falric();
 void AddSC_boss_marwyn();
+
 void AddSC_boss_lord_marrowgar();       // Icecrown Citadel
-void AddSC_boss_lady_deathwhisper();
+void AddSC_boss_blood_queen_lana_thel();
 void AddSC_boss_deathbringer_saurfang();
 void AddSC_boss_festergut();
-void AddSC_boss_rotface();
+void AddSC_boss_lady_deathwhisper();
 void AddSC_boss_professor_putricide();
-void AddSC_boss_blood_prince_council();
-void AddSC_boss_blood_queen_lana_thel();
+void AddSC_boss_rotface();
 void AddSC_boss_sindragosa();
+void AddSC_boss_valithria();
 void AddSC_icecrown_citadel_teleport();
 void AddSC_instance_icecrown_citadel();
-void AddSC_icecrown_citadel();
+void AddSC_boss_blood_prince_council();
+void AddSC_npc_eisflammenstrahl();
+void AddSC_boss_lichking();
+
+void AddSC_boss_baltharus();     // Ruby Sanctum
+void AddSC_boss_halion();
+void AddSC_boss_ragefire();
+void AddSC_boss_zarithrian();
+void AddSC_instance_ruby_sanctum();
+void AddSC_ruby_sanctum_halion_portal();
 
 void AddSC_dalaran();
 void AddSC_borean_tundra();
@@ -583,6 +591,8 @@ void AddSC_outdoorpvp_na();
 void AddSC_outdoorpvp_si();
 void AddSC_outdoorpvp_tf();
 void AddSC_outdoorpvp_zm();
+void AddSC_outdoorpvp_wg();
+void AddSC_wintergrasp();
 
 // player
 void AddSC_chat_log();
@@ -1083,8 +1093,6 @@ void AddNorthrendScripts()
     AddSC_boss_gothik();
     AddSC_boss_thaddius();
     AddSC_instance_naxxramas();
-    AddSC_boss_malygos();               //The Nexus Eye Of Eternity
-    AddSC_instance_eye_of_eternity();
     AddSC_boss_magus_telestra();        //The Nexus Nexus
     AddSC_boss_anomalus();
     AddSC_boss_ormorok();
@@ -1160,18 +1168,27 @@ void AddNorthrendScripts()
     AddSC_halls_of_reflection();
     AddSC_boss_falric();
     AddSC_boss_marwyn();
-    AddSC_boss_lord_marrowgar();        // Icecrown Citadel
-    AddSC_boss_lady_deathwhisper();
+    
+    AddSC_boss_lord_marrowgar();       // Icecrown Citadel
+    AddSC_boss_blood_queen_lana_thel();
     AddSC_boss_deathbringer_saurfang();
     AddSC_boss_festergut();
-    AddSC_boss_rotface();
+    AddSC_boss_lady_deathwhisper();
     AddSC_boss_professor_putricide();
-    AddSC_boss_blood_prince_council();
-    AddSC_boss_blood_queen_lana_thel();
+    AddSC_boss_rotface();
     AddSC_boss_sindragosa();
+    AddSC_boss_valithria();
     AddSC_icecrown_citadel_teleport();
     AddSC_instance_icecrown_citadel();
+    AddSC_boss_blood_prince_council();
+    AddSC_boss_lichking();
     AddSC_icecrown_citadel();
+
+    AddSC_boss_baltharus();        // Ruby Sanctum
+    AddSC_boss_halion();
+    AddSC_boss_ragefire();
+    AddSC_boss_zarithrian();
+    AddSC_instance_ruby_sanctum();
 
     AddSC_dalaran();
     AddSC_borean_tundra();
@@ -1184,6 +1201,8 @@ void AddNorthrendScripts()
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
     AddSC_isle_of_conquest();
+
+    AddSC_wintergrasp();
 #endif
 }
 
@@ -1196,6 +1215,7 @@ void AddOutdoorPvPScripts()
     AddSC_outdoorpvp_si();
     AddSC_outdoorpvp_tf();
     AddSC_outdoorpvp_zm();
+    AddSC_outdoorpvp_wg();
 #endif
 }
 

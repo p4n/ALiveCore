@@ -86,6 +86,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                 isNauseaEligible = true;
                 isOrbWhispererEligible = true;
                 coldflameJetsState = NOT_STARTED;
+                valithriaDreamwalker = 0;
+                dreamwalkersCache = 0;
+                lichKing = 0;
             }
 
             void OnPlayerEnter(Player* player)
@@ -196,6 +199,12 @@ class instance_icecrown_citadel : public InstanceMapScript
                         if (!creature->isDead())
                             ++frostwyrms;
                         break;
+                    case CREATURE_VALITHRIA_DREAMWALKER:
+						valithriaDreamwalker = creature->GetGUID();
+                        break;
+                    case NPC_THE_LICH_KING:
+						lichKing = creature->GetGUID();
+                        break;
                     default:
                         break;
                 }
@@ -248,6 +257,12 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case GO_DEATHBRINGER_S_CACHE_10H:
                     case GO_DEATHBRINGER_S_CACHE_25H:
                         deathbringersCache = go->GetGUID();
+                        break;
+                    case GO_DREAMWALKERS_CACHE_10N:
+                    case GO_DREAMWALKERS_CACHE_25N:
+                    case GO_DREAMWALKERS_CACHE_10H:
+                    case GO_DREAMWALKERS_CACHE_25H:
+                        dreamwalkersCache = go->GetGUID();
                         break;
                     case GO_SCOURGE_TRANSPORTER_SAURFANG:
                         saurfangTeleport = go->GetGUID();
@@ -374,6 +389,12 @@ class instance_icecrown_citadel : public InstanceMapScript
                         return spinestalker;
                     case DATA_RIMEFANG:
                         return rimefang;
+                    case DATA_VALITHRIA_DREAMWALKER:
+						return valithriaDreamwalker;
+					case DATA_VALITHRIA_DREAMWALKER_TRIGGER:
+						return valithriaTrigger;
+					case DATA_THE_LICH_KING:
+						return lichKing;
                     default:
                         break;
                 }
@@ -446,6 +467,12 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                         break;
                     case DATA_VALITHRIA_DREAMWALKER:
+						if (state == DONE)
+                        {
+							DoRespawnGameObject(dreamwalkersCache, 7*DAY);
+                            sLog->outError("set vali data DONE");
+						}
+						break;
                     case DATA_SINDRAGOSA:
                     case DATA_THE_LICH_KING:
                         break;
@@ -648,8 +675,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                             return false;
                         // no break
                     case DATA_SINDRAGOSA:
-                        //if (GetBossState(DATA_VALITHRIA_DREAMWALKER) != DONE)
-                        //    return false;
+                        if (GetBossState(DATA_VALITHRIA_DREAMWALKER) != DONE)
+                            return false;
                         break;
                     default:
                         break;
@@ -765,6 +792,8 @@ class instance_icecrown_citadel : public InstanceMapScript
             uint8 frostwyrms;
             uint8 spinestalkerTrash;
             uint8 rimefangTrash;
+            uint64 valithriaDreamwalker;
+            uint64 lichKing;
             bool isBonedEligible;
             bool isOozeDanceEligible;
             bool isNauseaEligible;

@@ -27,6 +27,12 @@ enum SharedSpells
     SPELL_BERSERK2  = 47008
 };
 
+enum eEnums
+{
+    SOUND_ENDING_7_KING                   = 17360,
+    MOVIE_ID_ARTHAS_DEATH                 = 16
+};
+
 enum TeleporterSpells
 {
     LIGHT_S_HAMMER_TELEPORT         = 70781,
@@ -97,11 +103,13 @@ enum CreaturesIds
 
     // Lord Marrowgar
     NPC_LORD_MARROWGAR                          = 36612,
+    CREATURE_MARROWGAR                          = 36612,
     NPC_COLDFLAME                               = 36672,
     NPC_BONE_SPIKE                              = 36619,
 
     // Lady Deathwhisper
     NPC_LADY_DEATHWHISPER                       = 36855,
+    CREATURE_DEATHWHISPER                       = 36855,
     NPC_CULT_FANATIC                            = 37890,
     NPC_DEFORMED_FANATIC                        = 38135,
     NPC_REANIMATED_FANATIC                      = 38009,
@@ -112,6 +120,7 @@ enum CreaturesIds
 
     // Deathbringer Saurfang
     NPC_DEATHBRINGER_SAURFANG                   = 37813,
+    CREATURE_SAURFANG                           = 37813,
     NPC_BLOOD_BEAST                             = 38508,
     NPC_SE_JAINA_PROUDMOORE                     = 37188,    // SE means Saurfang Event
     NPC_SE_MURADIN_BRONZEBEARD                  = 37200,
@@ -123,16 +132,19 @@ enum CreaturesIds
 
     // Festergut
     NPC_FESTERGUT                               = 36626,
+    CREATURE_FESTERGURT                         = 36626,
     NPC_GAS_DUMMY                               = 36659,
 
     // Rotface
     NPC_ROTFACE                                 = 36627,
+    CREATURE_ROTFACE                            = 36627,
     NPC_OOZE_SPRAY_STALKER                      = 37986,
     NPC_PUDDLE_STALKER                          = 37013,
     NPC_UNSTABLE_EXPLOSION_STALKER              = 38107,
 
     // Professor Putricide
     NPC_PROFESSOR_PUTRICIDE                     = 36678,
+    CREATURE_PROFESSOR_PUTRICIDE                = 36678,
     NPC_ABOMINATION_WING_MAD_SCIENTIST_STALKER  = 37824,
     NPC_GROWING_OOZE_PUDDLE                     = 37690,
     NPC_GAS_CLOUD                               = 37562,
@@ -141,6 +153,25 @@ enum CreaturesIds
     NPC_TEAR_GAS_TARGET_STALKER                 = 38317,
     NPC_MUTATED_ABOMINATION_10                  = 37672,
     NPC_MUTATED_ABOMINATION_25                  = 38285,
+
+	// Valitria Dreamwalker
+	CREATURE_VALITHRIA_DREAMWALKER              = 36789,
+	CREATURE_CLOUD                              = 37985,
+	CREATURE_ABOMINATION                        = 37886,
+    CREATURE_SKELETON                           = 36791,
+    CREATURE_ARCHMAGE                           = 37868,
+    CREATURE_SUPPRESSER                         = 37863,
+    CREATURE_ZOMBIE                             = 37934,
+    
+    CREATURE_PORTAL                  = 37945,
+    CREATURE_WORM                    = 37907,
+    CREATURE_VOID                    = 38068,
+    CREATURE_COMBAT_TRIGGER          = 38752,
+	  
+    CREATURE_PORTAL_NORMAL_MODE_PRE             = 38186,
+    CREATURE_PORTAL_NORMAL_MODE_NPC             = 37945,
+    CREATURE_PORTAL_HEROIC_MODE_PRE             = 38429,
+    CREATURE_PORTAL_HEROIC_MODE_NPC             = 38430,
 
     // Blood Prince Council
     NPC_PRINCE_KELESETH                         = 37972,
@@ -157,9 +188,11 @@ enum CreaturesIds
 
     // Blood-Queen Lana'thel
     NPC_BLOOD_QUEEN_LANA_THEL                   = 37955,
+    CREATURE_BLOOD_QUEEN_LANATHEL               = 37955,
 
     // Sindragosa
     NPC_SINDRAGOSA                              = 36853,
+    CREATURE_SINDRAGOSA							= 36853,
     NPC_SPINESTALKER                            = 37534,
     NPC_RIMEFANG                                = 37533,
     NPC_FROSTWARDEN_HANDLER                     = 37531,
@@ -167,6 +200,22 @@ enum CreaturesIds
     NPC_ICY_BLAST                               = 38223,
     NPC_FROST_BOMB                              = 37186,
     NPC_ICE_TOMB                                = 36980,
+    
+    	// LichKing
+	CREATURE_ICE_SPHERE                         = 36633,
+    CREATURE_DRUDGE_GHOUL                       = 37695,
+    CREATURE_SHAMBLING_HORROR                   = 37698,
+    CREATURE_VALKYR                             = 36609,
+    CREATURE_DEFILE                             = 38757,
+    CREATURE_RAGING_SPIRIT                      = 36701,
+    CREATURE_TRIGGER                            = 38667,
+    CREATURE_VILE_SPIRIT                        = 37799,
+	CREATURE_LICH_KING                          = 36597,
+    CREATURE_TIRION_ICC                         = 38995,
+    CREAUTRE_MENETHIL                           = 38579,
+    CREATURE_FROSTMOURNE_TRIGGER                = 38584,
+    CREATURE_TERENAS_F                          = 36823, //for frostmourne
+    CREATURE_SPIRIT_WARDEN_F                    = 36824,
 };
 
 enum GameObjectsIds
@@ -211,6 +260,10 @@ enum GameObjectsIds
     // Valithria Dreamwalker
     GO_GREEN_DRAGON_BOSS_ENTRANCE           = 201375,
     GO_GREEN_DRAGON_BOSS_EXIT               = 201374,
+    GO_DREAMWALKERS_CACHE_10N               = 201959,
+    GO_DREAMWALKERS_CACHE_25N               = 202338,
+    GO_DREAMWALKERS_CACHE_10H               = 202339,
+    GO_DREAMWALKERS_CACHE_25H               = 202340,
 
     // Sindragosa
     GO_SINDRAGOSA_ENTRANCE_DOOR             = 201373,
@@ -274,6 +327,24 @@ enum SharedActions
     // Sindragosa
     ACTION_START_FROSTWYRM      = -368530,
     ACTION_TRIGGER_ASPHYXIATION = -368531,
+};
+
+enum eAchievements
+{
+    ACHIEV_BONED_10                             = 4534,
+    ACHIEV_BONED_25                             = 4610,
+    AVHIEV_FULL_HOUSE_10                        = 4535,
+    AVHIEV_FULL_HOUSE_25                        = 4611,
+    ACHIEV_MESS_10                              = 4537,
+    ACHIEV_MESS_25                              = 4613,
+    ACHIEVMENT_ONCE_BITTEN_TWICE_SHY_10         = 4539,
+    ACHIEVMENT_ONCE_BITTEN_TWICE_SHY_25         = 4618,
+    ACHIEV_ALL_YOU_CAN_EAT_10                   = 4580,
+    ACHIEV_ALL_YOU_CAN_EAT_25                   = 4620,
+    ACHIEV_BEEN_WAITING_A_LONG_TIME_FOR_THIS_10 = 4601,
+    ACHIEV_BEEN_WAITING_A_LONG_TIME_FOR_THIS_25 = 4621,
+    ACHIEV_NECK_DEEP_IN_VILE_10                 = 4581,
+    ACHIEV_NECK_DEEP_IN_VILE_25                 = 4622
 };
 
 // Declaration

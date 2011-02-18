@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -249,6 +249,7 @@ enum eGurgthock
     QUEST_AMPHITHEATER_ANGUISH_YGGDRAS_1          = 12932,
     QUEST_AMPHITHEATER_ANGUISH_MAGNATAUR          = 12933,
     QUEST_AMPHITHEATER_ANGUISH_FROM_BEYOND        = 12934,
+    QUEST_AMPHITHEATER_ANGUISH_VLADOF			  = 12948,
 
     NPC_ORINOKO_TUSKBREAKER                       = 30020,
     NPC_KORRAK_BLOODRAGER                         = 30023,
@@ -262,6 +263,7 @@ enum eGurgthock
     NPC_FIEND_AIR                                 = 30045,
     NPC_FIEND_FIRE                                = 30042,
     NPC_FIEND_EARTH                               = 30043,
+    NPC_VLADOF									  = 30022,
 
     SAY_QUEST_ACCEPT_TUSKARRMAGEDON               = -1571031,
     SAY_QUEST_ACCEPT_KORRAK_1                     = -1571033,
@@ -400,6 +402,10 @@ public:
                             uiTimer = 2000;
                             uiPhase = 12;
                             break;
+                        case QUEST_AMPHITHEATER_ANGUISH_VLADOF:
+                            uiTimer = 5000;
+                            uiPhase = 15;
+                            break;
                    }
                         break;
                 }
@@ -522,6 +528,19 @@ public:
                                 pCreature->AI()->SetData(1,uiBossRandom);
                             uiPhase = 0;
                             break;
+                        case 15:
+                        	if (Creature* pSummon = me->SummonCreature(NPC_VLADOF, SpawnPosition[0], TEMPSUMMON_CORPSE_DESPAWN, 1000)) {
+                                SummonGUID = pSummon->GetGUID();
+                        	}
+                        	uiPhase = 16;
+                        	break;
+                        case 16:
+                            if (Creature* pSummon = Unit::GetCreature(*me, SummonGUID))
+                                pSummon->GetMotionMaster()->MoveJump(5776.319824f, -2981.005371f, 273.100037f, 10.0f, 20.0f);
+                            uiPhase = 0;
+                            SummonGUID = 0;
+                            break;
+                        	
                     }
                 }else uiTimer -= uiDiff;
             }
@@ -548,6 +567,10 @@ public:
             case QUEST_AMPHITHEATER_ANGUISH_FROM_BEYOND:
                 pCreature->AI()->SetData(1, pQuest->GetQuestId());
                 break;
+            case QUEST_AMPHITHEATER_ANGUISH_VLADOF:
+            	pCreature->AI()->SetData(1, pQuest->GetQuestId());
+            	break;
+            	
         }
 
         pCreature->AI()->SetGUID(pPlayer->GetGUID());
@@ -558,6 +581,135 @@ public:
     CreatureAI *GetAI(Creature *creature) const
     {
         return new npc_gurgthockAI(creature);
+    }
+};
+
+/*####
+## npc_orinoko_tuskbreaker
+####*/
+
+enum eVladof
+{
+    SPELL_BLOODPRESENCE      = 50689,
+    SPELL_BLOODPLAGUE       = 55973,
+    SPELL_BLOODBOOIL            = 55974,
+    SPELL_HYSTERIA    = 55975,
+	SPELL_DEFLECT    = 55976,
+	SPELL_WHIRLWIND    = 55977,
+
+};
+
+class npc_vladof : public CreatureScript
+{
+public:
+    npc_vladof() : CreatureScript("npc_vladof") { }
+
+    struct npc_vladofAI : public ScriptedAI
+    {
+        npc_vladofAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            me->SetReactState(REACT_PASSIVE);
+        }
+
+        bool bSummoned;
+		bool bHysteria;
+		
+        uint32 uiPlagueTimer;
+        uint32 uiHysteriaTimer;
+        uint32 uiBloodBoilTimer;
+        uint32 uiDeflectTimer;
+        uint32 uiWhirlwindTimer;
+        
+        uint64 AffectedGUID;
+
+        void Reset()
+        {
+            bSummoned           = false;
+            bHysteria        = false;
+            uiPlagueTimer		= 10000;
+            uiHysteriaTimer		= 15000;
+            uiBloodBoilTimer	= 20000;
+            uiDeflectTimer		= 60000;
+            uiWhirlwindTimer	= 30000;
+            
+            AffectedGUID = 0;
+        }
+
+        void EnterEvadeMode()
+        {
+
+        }
+
+        void MovementInform(uint32 uiType, uint32 /*uiId*/)
+        {
+            if (uiType != POINT_MOTION_TYPE)
+                return;
+
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            me->SetReactState(REACT_AGGRESSIVE);
+            me->SetHomePosition(me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),me->GetOrientation());
+            uiPlagueTimer  = 3000;
+        }
+
+        void EnterCombat(Unit* pWho)
+        {
+            DoCast(me, SPELL_BLOODPRESENCE);
+        }
+
+        void UpdateAI(const uint32 uiDiff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (!bHysteria && uiHysteriaTimer <= uiDiff)
+            {
+                DoCast(me, SPELL_HYSTERIA);
+                bHysteria = true;
+            } else uiHysteriaTimer -= uiDiff;
+
+            if (uiPlagueTimer <= uiDiff)
+            {
+                if (Unit *pAffected = SelectUnit(SELECT_TARGET_RANDOM,0))
+                {
+                    DoCast(pAffected, SPELL_BLOODPLAGUE);
+                    AffectedGUID = pAffected->GetGUID();
+                }
+                uiPlagueTimer = 20000;
+            } else uiPlagueTimer -= uiDiff;
+
+            if (uiBloodBoilTimer <= uiDiff)
+            {
+                if (Unit *pAffected = SelectUnit(SELECT_TARGET_RANDOM,0))
+                {
+                    DoCast(pAffected, SPELL_BLOODBOOIL);
+                    AffectedGUID = pAffected->GetGUID();
+                }
+                uiBloodBoilTimer = 15000;
+            } else uiBloodBoilTimer -= uiDiff;
+			
+			if (uiWhirlwindTimer <= uiDiff)
+            {
+                DoCast(me, SPELL_WHIRLWIND);
+                uiWhirlwindTimer = 20000;
+            } else uiWhirlwindTimer -= uiDiff;
+            
+            DoMeleeAttackIfReady();
+        }
+
+
+
+        void JustDied(Unit* pKiller)
+        {
+            if (pKiller->GetTypeId() == TYPEID_PLAYER)
+                pKiller->GetCharmerOrOwnerPlayerOrPlayerItself()->GroupEventHappens(QUEST_AMPHITHEATER_ANGUISH_VLADOF, pKiller);
+
+        }
+    };
+
+    CreatureAI *GetAI(Creature *creature) const
+    {
+        return new npc_vladofAI(creature);
     }
 };
 
@@ -1153,8 +1305,10 @@ public:
         {
             if (!SummonList.empty())
                 for (std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
+                {
                     if (Creature* pTemp = Unit::GetCreature(*me, *itr))
-                        pTemp->DespawnOrUnsummon();
+                        pTemp->ForcedDespawn();
+                }
 
             if (Player* pPlayer = pKiller->GetCharmerOrOwnerPlayerOrPlayerItself())
                 pPlayer->GetCharmerOrOwnerPlayerOrPlayerItself()->GroupEventHappens(QUEST_AMPHITHEATER_ANGUISH_FROM_BEYOND, pKiller);
@@ -1430,5 +1584,6 @@ void AddSC_zuldrak()
     new npc_crusade_recruit;
     new npc_elemental_lord;
     new npc_fiend_elemental;
+    new npc_vladof;
     new go_scourge_enclosure;
 }
