@@ -216,7 +216,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case CREATURE_VALITHRIA_DREAMWALKER:
 						valithriaDreamwalker = creature->GetGUID();
                         break;
-                    case NPC_THE_LICH_KING:
+                    case CREATURE_LICH_KING:
 						lichKing = creature->GetGUID();
                         break;
                     default:
