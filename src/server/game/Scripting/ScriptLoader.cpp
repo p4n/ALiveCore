@@ -477,9 +477,10 @@ void AddSC_boss_sindragosa();
 void AddSC_boss_valithria();
 void AddSC_icecrown_citadel_teleport();
 void AddSC_instance_icecrown_citadel();
+void AddSC_icecrown_citadel();
 void AddSC_boss_blood_prince_council();
 void AddSC_npc_eisflammenstrahl();
-void AddSC_boss_lichking();
+// void AddSC_boss_lichking(); // defunct
 
 void AddSC_boss_baltharus();     // Ruby Sanctum
 void AddSC_boss_halion();
@@ -1181,7 +1182,7 @@ void AddNorthrendScripts()
     AddSC_icecrown_citadel_teleport();
     AddSC_instance_icecrown_citadel();
     AddSC_boss_blood_prince_council();
-    AddSC_boss_lichking();
+//    AddSC_boss_lichking();	// defunct
     AddSC_icecrown_citadel();
 
     AddSC_boss_baltharus();        // Ruby Sanctum

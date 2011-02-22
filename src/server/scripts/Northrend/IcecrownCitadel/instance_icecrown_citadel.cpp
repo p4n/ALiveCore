@@ -835,6 +835,8 @@ class instance_icecrown_citadel : public InstanceMapScript
             uint8 spinestalkerTrash;
             uint8 rimefangTrash;
             uint64 valithriaDreamwalker;
+            uint64 valithriaTrigger;
+            uint64 dreamwalkersCache;
             uint64 lichKing;
             bool isBonedEligible;
             bool isOozeDanceEligible;

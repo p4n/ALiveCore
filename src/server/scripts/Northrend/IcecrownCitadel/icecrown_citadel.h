@@ -75,6 +75,8 @@ enum DataTypes
     DATA_SPINESTALKER               = 23,
     DATA_RIMEFANG                   = 24,
     DATA_COLDFLAME_JETS             = 25,
+    DATA_VALITHRIA_DREAMWALKER_TRIGGER = 26,
+    DATA_BEEN_WAITING				= 27,
 };
 
 #define MAX_ENCOUNTER 12
