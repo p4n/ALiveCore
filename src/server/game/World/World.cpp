@@ -1381,9 +1381,6 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Creature Template Addon Data...");
     sObjectMgr->LoadCreatureAddons();                            // must be after LoadCreatureTemplates() and LoadCreatures()
 
-    sLog->outString("Loading Vehicle Accessories...");
-    sObjectMgr->LoadVehicleAccessories();                        // must be after LoadCreatureTemplates()
-
     sLog->outString("Loading Creature Respawn Data...");         // must be after PackInstances()
     sObjectMgr->LoadCreatureRespawnTimes();
 
@@ -1420,14 +1417,20 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Game Event Data...");               // must be after loading pools fully
     sGameEventMgr->LoadFromDB();                                 // TODOLEAK: add scopes
 
+    sLog->outString("Loading UNIT_NPC_FLAG_SPELLCLICK Data..."); // must be after LoadQuests
+    sObjectMgr->LoadNPCSpellClickSpells();
+
+    sLog->outString("Loading Vehicle Template Accessories...");
+    sObjectMgr->LoadVehicleTemplateAccessories();                // must be after LoadCreatureTemplates() and LoadNPCSpellClickSpells()
+
+    sLog->outString("Loading Vehicle Accessories...");
+    sObjectMgr->LoadVehicleAccessories();                       // must be after LoadCreatureTemplates() and LoadNPCSpellClickSpells()
+
     sLog->outString("Loading Dungeon boss data...");
     sObjectMgr->LoadInstanceEncounters();
 
     sLog->outString("Loading LFG rewards...");
     sLFGMgr->LoadRewards();
-
-    sLog->outString("Loading UNIT_NPC_FLAG_SPELLCLICK Data...");
-    sObjectMgr->LoadNPCSpellClickSpells();
 
     sLog->outString("Loading SpellArea Data...");                // must be after quest load
     sSpellMgr->LoadSpellAreas();
@@ -1632,7 +1635,7 @@ void World::SetInitialWorldSettings()
     sSmartScriptMgr->LoadSmartAIFromDB();
 
     ///- Initialize game time and timers
-    sLog->outDebug("DEBUG:: Initialize game time and timers");
+    sLog->outString("Initialize game time and timers");
     m_gameTime = time(NULL);
     m_startTime=m_gameTime;
 
@@ -1669,7 +1672,7 @@ void World::SetInitialWorldSettings()
     mail_timer = ((((localtime(&m_gameTime)->tm_hour + 20) % 24)* HOUR * IN_MILLISECONDS) / m_timers[WUPDATE_AUCTIONS].GetInterval());
                                                             //1440
     mail_timer_expires = ((DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
-    sLog->outDebug("Mail timer set to: " UI64FMTD ", mail return is called every " UI64FMTD " minutes", uint64(mail_timer), uint64(mail_timer_expires));
+    sLog->outDetail("Mail timer set to: " UI64FMTD ", mail return is called every " UI64FMTD " minutes", uint64(mail_timer), uint64(mail_timer_expires));
 
     ///- Initilize static helper structures
     AIRegistry::Initialize();
@@ -2542,7 +2545,7 @@ void World::ProcessCliCommands()
     CliCommandHolder* command;
     while (cliCmdQueue.next(command))
     {
-        sLog->outDebug("CLI command under processing...");
+        sLog->outDetail("CLI command under processing...");
         zprint = command->m_print;
         callbackArg = command->m_callbackArg;
         CliHandler handler(callbackArg, zprint);
@@ -2583,9 +2586,9 @@ void World::SendAutoBroadcast()
         WorldPacket data(SMSG_NOTIFICATION, (msg.size()+1));
         data << msg;
         sWorld->SendGlobalMessage(&data);
-
     }
-    sLog->outDebug("AutoBroadcast: '%s'",msg.c_str());
+
+    sLog->outDetail("AutoBroadcast: '%s'",msg.c_str());
 }
 
 void World::UpdateRealmCharCount(uint32 accountId)

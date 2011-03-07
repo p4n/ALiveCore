@@ -402,7 +402,7 @@ uint32 CalculatePowerCost(SpellEntry const * spellInfo, Unit const * caster, Spe
                 break;
             case POWER_RUNE:
             case POWER_RUNIC_POWER:
-                sLog->outDebug("CalculateManaCost: Not implemented yet!");
+                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Not implemented yet!");
                 break;
             default:
                 sLog->outError("CalculateManaCost: Unknown power type '%d' in spell %d", spellInfo->powerType, spellInfo->Id);
@@ -1225,7 +1225,7 @@ void SpellMgr::LoadSpellTargetPositions()
         if (found)
         {
 //            if (!sSpellMgr->GetSpellTargetPosition(i))
-//                sLog->outDebug("Spell (ID: %u) does not have record in `spell_target_position`", i);
+//                sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell (ID: %u) does not have record in `spell_target_position`", i);
         }
     }
 
@@ -3194,6 +3194,34 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
         }
     }
 
+    bool isVehicleAura1 = false;
+    bool isVehicleAura2 = false;
+    uint8 i = 0;
+    while (i < MAX_SPELL_EFFECTS && !(isVehicleAura1 && isVehicleAura2))
+    {
+        if (spellInfo_1->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura1 = true;
+        if (spellInfo_2->EffectApplyAuraName[i] == SPELL_AURA_CONTROL_VEHICLE)
+            isVehicleAura2 = true;
+
+        ++i;
+    }
+
+    if (isVehicleAura1 && isVehicleAura2)
+    {
+        Vehicle* veh = NULL;
+        if (aura1->GetOwner()->ToUnit())
+            veh = aura1->GetOwner()->ToUnit()->GetVehicleKit();
+
+        if (!veh)           // We should probably just let it stack. Vehicle system will prevent undefined behaviour later
+            return true;
+
+        if (!veh->GetAvailableSeatCount())
+            return false;   // No empty seat available
+
+        return true;        // Empty seat available (skip rest)
+    }
+
     uint32 spellId_1 = GetLastSpellInChain(spellInfo_1->Id);
     uint32 spellId_2 = GetLastSpellInChain(spellInfo_2->Id);
 
@@ -3605,6 +3633,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
         switch (i)
         {
+        case 36350: //They Must Burn Bomb Aura (self)
+            spellInfo->EffectTriggerSpell[0] = 36325; // They Must Burn Bomb Drop (DND)
+            count++;
+            break;
         case 49838: // Stop Time
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
             count++;
@@ -3963,7 +3995,16 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetB[0] = TARGET_UNIT_MASTER;
             count++;
             break;
+        // ULDUAR SPELLS
+        //
+        case 63342: // Focused Eyebeam Summon Trigger
+            spellInfo->MaxAffectedTargets = 1;
+            count++;
+            break;
+        // ENDOF ULDUAR SPELLS
+        //
         // ICECROWN CITADEL SPELLS
+        //
         // THESE SPELLS ARE WORKING CORRECTLY EVEN WITHOUT THIS HACK
         // THE ONLY REASON ITS HERE IS THAT CURRENT GRID SYSTEM
         // DOES NOT ALLOW FAR OBJECT SELECTION (dist > 333)

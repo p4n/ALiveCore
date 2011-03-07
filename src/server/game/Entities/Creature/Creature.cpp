@@ -154,7 +154,6 @@ m_formation(NULL)
 
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
-    m_GlobalCooldown = 0;
     DisableReputationGain = false;
     //m_unit_movement_flags = MONSTER_MOVE_WALK;
 
@@ -430,11 +429,6 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data)
 
 void Creature::Update(uint32 diff)
 {
-    if (m_GlobalCooldown <= diff)
-        m_GlobalCooldown = 0;
-    else
-        m_GlobalCooldown -= diff;
-
     if (IsAIEnabled && TriggerJustRespawned)
     {
         TriggerJustRespawned = false;
@@ -708,7 +702,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     // make sure nothing can change the AI during AI update
     if (m_AI_locked)
     {
-        sLog->outDebug("AIM_Initialize: failed to init, locked.");
+        sLog->outDebug(LOG_FILTER_TSCR, "AIM_Initialize: failed to init, locked.");
         return false;
     }
 
@@ -1257,7 +1251,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint3
     if (!vehId)
         vehId = cinfo->VehicleId;
 
-    if (vehId && !CreateVehicleKit(vehId))
+    if (vehId && !CreateVehicleKit(vehId, Entry))
         vehId = 0;
 
     Object::_Create(guidlow, Entry, vehId ? HIGHGUID_VEHICLE : HIGHGUID_UNIT);
@@ -1389,7 +1383,7 @@ void Creature::DeleteFromDB()
 {
     if (!m_DBTableGuid)
     {
-        sLog->outDebug("Trying to delete not saved creature!");
+        sLog->outError("Trying to delete not saved creature! LowGUID: %u, Entry: %u", GetGUIDLow(), GetEntry());
         return;
     }
 
@@ -1429,6 +1423,9 @@ bool Creature::canSeeAlways(WorldObject const* obj) const
 bool Creature::canStartAttack(Unit const* who, bool force) const
 {
     if (isCivilian())
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PASSIVE))
         return false;
 
     if (!canFly() && (GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE + m_CombatDistance))
@@ -1667,7 +1664,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
 {
     if (TempSummon* summon = this->ToTempSummon())
-        summon->UnSummon();
+        summon->UnSummon(msTimeToDespawn);
     else
         ForcedDespawn(msTimeToDespawn);
 }
@@ -1853,7 +1850,7 @@ void Creature::SendAIReaction(AiReaction reactionType)
 
     ((WorldObject*)this)->SendMessageToSet(&data, true);
 
-    sLog->outDebug("WORLD: Sent SMSG_AI_REACTION, type %u.", reactionType);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_AI_REACTION, type %u.", reactionType);
 }
 
 void Creature::CallAssistance()
@@ -1927,6 +1924,9 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction /
 
     // we don't need help from non-combatant ;)
     if (isCivilian())
+        return false;
+
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_PASSIVE))
         return false;
 
     // skip fighting creature
@@ -2106,7 +2106,7 @@ bool Creature::LoadCreaturesAddon(bool reload)
             }
 
             AddAura(AdditionalSpellInfo, cAura->effectMask, this);
-            sLog->outDebug("Spell: %u with AuraEffectMask %u added to creature (GUID: %u Entry: %u)", cAura->spell_id, cAura->effectMask,GetGUIDLow(),GetEntry());
+            sLog->outDebug(LOG_FILTER_UNITS, "Spell: %u with AuraEffectMask %u added to creature (GUID: %u Entry: %u)", cAura->spell_id, cAura->effectMask,GetGUIDLow(),GetEntry());
         }
     }
     return true;
@@ -2185,8 +2185,6 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
 
     if (spellInfo->Category)
         _AddCreatureCategoryCooldown(spellInfo->Category, time(NULL));
-
-    m_GlobalCooldown = spellInfo->StartRecoveryTime;
 }
 
 bool Creature::HasCategoryCooldown(uint32 spell_id) const
@@ -2194,10 +2192,6 @@ bool Creature::HasCategoryCooldown(uint32 spell_id) const
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
     if (!spellInfo)
         return false;
-
-    // check global cooldown if spell affected by it
-    if (spellInfo->StartRecoveryCategory > 0 && m_GlobalCooldown > 0)
-        return true;
 
     CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->Category);
     return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / IN_MILLISECONDS)) > time(NULL));

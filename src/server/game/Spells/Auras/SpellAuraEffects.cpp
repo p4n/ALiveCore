@@ -1517,7 +1517,7 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit * caster) const
 
             //donator->SendSpellNonMeleeDamageLog(donator, GetId(), damage, GetSpellSchoolMask(spellProto), 0, 0, false, 0);
             caster->ModifyHealth(-(int32)damage);
-            sLog->outDebug("PeriodicTick: donator %u target %u damage %u.", target->GetEntry(), target->GetEntry(), damage);
+            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "PeriodicTick: donator %u target %u damage %u.", target->GetEntry(), target->GetEntry(), damage);
 
             float gainMultiplier = SpellMgr::CalculateSpellEffectValueMultiplier(GetSpellProto(), GetEffIndex(), caster);
 
@@ -2454,7 +2454,7 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
     {
         Unit * triggerCaster = GetTriggeredSpellCaster(triggeredSpellInfo, caster, triggerTarget);
         triggerCaster->CastSpell(triggerTarget, triggeredSpellInfo, true, NULL, this);
-        sLog->outDebug("AuraEffect::TriggerSpell: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
+        sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::TriggerSpell: Spell %u Trigger %u", GetId(), triggeredSpellInfo->Id);
     }
     else
     {
@@ -4270,7 +4270,7 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const * aurApp, uint8 
 
     if (apply)
     {
-        caster->EnterVehicle(target->GetVehicleKit(), m_amount - 1, aurApp);
+        caster->_EnterVehicle(target->GetVehicleKit(), m_amount - 1, aurApp);
     }
     else
     {
@@ -4283,7 +4283,7 @@ void AuraEffect::HandleAuraControlVehicle(AuraApplication const * aurApp, uint8 
 
         // some SPELL_AURA_CONTROL_VEHICLE auras have a dummy effect on the player - remove them
         caster->RemoveAurasDueToSpell(GetId());
-        caster->ExitVehicle();
+        caster->_ExitVehicle();
     }
 }
 
@@ -6601,7 +6601,7 @@ void AuraEffect::HandleAuraSetVehicle(AuraApplication const * aurApp, uint8 mode
 
     if (apply)
     {
-        if (!target->CreateVehicleKit(vehicleId))
+        if (!target->CreateVehicleKit(vehicleId, 0))
             return;
     }
     else if (target->GetVehicleKit())
