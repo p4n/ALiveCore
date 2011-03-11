@@ -383,7 +383,7 @@ public:
                             if (instance)
                             {
                                 if (Creature *pLeviathan = me->GetCreature(*me, instance->GetData64(DATA_LEVIATHAN_MK_II)))
-                                    me->EnterVehicle(pLeviathan->GetVehicleKit(), 4);
+                                    me->_EnterVehicle(pLeviathan->GetVehicleKit(), 4);
                             }
                             JumpToNextStep(2000);
                             break;
@@ -455,7 +455,7 @@ public:
                                         if (Creature* Rocket = me->SummonCreature(NPC_ROCKET, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_MANUAL_DESPAWN))
                                         {
                                             Rocket->SetReactState(REACT_PASSIVE);
-                                            Rocket->EnterVehicle(pVX_001->GetVehicleKit(), n);
+                                            Rocket->_EnterVehicle(pVX_001->GetVehicleKit(), n);
                                         }
                                     }
                                 }
@@ -466,7 +466,7 @@ public:
                             if (instance)
                             {
                                 if (Creature *pVX_001 = me->GetCreature(*me, instance->GetData64(DATA_VX_001)))
-                                    me->EnterVehicle(pVX_001->GetVehicleKit(), 0);
+                                    me->_EnterVehicle(pVX_001->GetVehicleKit(), 0);
                             }
                             JumpToNextStep(3500);
                             break;
@@ -574,7 +574,7 @@ public:
                                    pLeviathan->GetMotionMaster()->MovePoint(0, 2744.65f, 2569.46f, 364.397f);
                                 if (Creature *pVX_001 = me->GetCreature(*me, instance->GetData64(DATA_VX_001)))
                                 {
-                                    me->EnterVehicle(pVX_001->GetVehicleKit(), 1);
+                                    me->_EnterVehicle(pVX_001->GetVehicleKit(), 1);
                                     me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
                                     DoScriptText(SAY_AERIAL_DEATH, me);
                                 }
@@ -588,7 +588,7 @@ public:
                                     {
                                         pVX_001->SetStandState(UNIT_STAND_STATE_STAND);
                                         pVX_001->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_CUSTOM_SPELL_01);
-                                        pVX_001->EnterVehicle(pLeviathan->GetVehicleKit(), 7);
+                                        pVX_001->_EnterVehicle(pLeviathan->GetVehicleKit(), 7);
                                     }
                             JumpToNextStep(2000);
                             break;
@@ -598,7 +598,7 @@ public:
                                     if (Creature *pAerialUnit = me->GetCreature(*me, instance->GetData64(DATA_AERIAL_UNIT)))
                                     {
                                         pAerialUnit->SetFlying(false);
-                                        pAerialUnit->EnterVehicle(pVX_001->GetVehicleKit(), 3);
+                                        pAerialUnit->_EnterVehicle(pVX_001->GetVehicleKit(), 3);
                                         DoScriptText(SAY_V07TRON_ACTIVATE, me);
                                     }
                             JumpToNextStep(10000);

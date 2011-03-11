@@ -426,7 +426,7 @@ void AddSC_boss_mimiron();
 void AddSC_boss_razorscale();
 void AddSC_boss_thorim();
 void AddSC_boss_xt002();
-void AddSC_boss_yogg_saron();
+//void AddSC_boss_yogg_saron();
 void AddSC_ulduar_teleporter();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
@@ -1136,7 +1136,7 @@ void AddNorthrendScripts()
     AddSC_boss_razorscale();
     AddSC_boss_thorim();
     AddSC_boss_xt002();
-    AddSC_boss_yogg_saron();
+    //AddSC_boss_yogg_saron();
     AddSC_ulduar_teleporter();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
