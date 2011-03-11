@@ -38,19 +38,35 @@ enum eTypes
     TYPE_ALGALON                = 13,
     TYPE_COLOSSUS               = 14,
 
-    // Assembly of Iorn
     DATA_STEELBREAKER,
     DATA_MOLGEIM,
     DATA_BRUNDIR,
 
     DATA_EXP_COMMANDER,
-
-    // Kologarn:
-    DATA_LEFT_ARM,
     DATA_RIGHT_ARM,
+    DATA_LEFT_ARM,
 };
 
-enum eNPCs
+enum Encounter
+{
+    BOSS_LEVIATHAN,
+    BOSS_IGNIS,
+    BOSS_RAZORSCALE,
+    BOSS_XT002,
+    BOSS_ASSEMBLY,
+    BOSS_KOLOGARN,
+    BOSS_AURIAYA,
+    BOSS_MIMIRON,
+    BOSS_HODIR,
+    BOSS_THORIM,
+    BOSS_FREYA,
+    BOSS_VEZAX,
+    BOSS_YOGGSARON,
+    BOSS_ALGALON,
+    MAX_BOSS_NUMBER
+};
+
+enum eBossNPCs
 {
     NPC_LEVIATHAN               = 33113,
     NPC_IGNIS                   = 33118,
@@ -61,20 +77,19 @@ enum eNPCs
     NPC_MOLGEIM                 = 32927,
     NPC_BRUNDIR                 = 32857,
     NPC_KOLOGARN                = 32930,
-    NPC_KOLOGARN_BRIDGE         = 34297,
-    NPC_FOCUSED_EYEBEAM         = 33632,
-    NPC_FOCUSED_EYEBEAM_RIGHT   = 33802,
-    NPC_LEFT_ARM                = 32933,
-    NPC_RIGHT_ARM               = 32934,
-    NPC_RUBBLE                  = 33768,
     NPC_AURIAYA                 = 33515,
     NPC_MIMIRON                 = 33350,
-    NPC_HODIR                   = 32845,
+    //NPC_HODIR                   = 32845,
     NPC_THORIM                  = 32865,
     NPC_FREYA                   = 32906,
     NPC_VEZAX                   = 33271,
     NPC_YOGGSARON               = 33288,
     NPC_ALGALON                 = 32871,
+	NPC_GUARDIN                 = 33136,
+	NPC_SARA_NORMAL             = 33134,
+	NPC_CLOUD                   = 33292,
+	NPC_SARATRANS               = 34313,
+	NPC_UNVER_WACHE             = 33988,
 };
 
 enum eTowerEvents
@@ -90,4 +105,56 @@ enum eAchievementCriteria
     ACHIEVEMENT_CRITERIA_HOT_POCKET_10                   = 10430, //ignis
     ACHIEVEMENT_CRITERIA_HOT_POCKET_25                   = 10431,
 };
+
+enum Data64
+{
+    DATA_LEVIATHAN,
+    DATA_NORGANNON,
+    DATA_IGNIS,
+    DATA_RAZORSCALE,
+    DATA_XT002,
+    DATA_KOLOGARN,
+    DATA_AURIAYA,
+    DATA_BRIGHTLEAF,
+    DATA_IRONBRANCH,
+    DATA_FREYA,
+    DATA_THORIM,
+    DATA_RUNIC_COLOSSUS,
+    DATA_RUNE_GIANT,
+    DATA_MIMIRON,
+    DATA_LEVIATHAN_MK_II,
+	DATA_xtest,
+	DATA_ctest,
+	DATA_txtest,
+	DATA_ztest,
+    DATA_VX_001,
+    DATA_AERIAL_UNIT,
+    DATA_MAGNETIC_CORE,
+    DATA_VEZAX,
+    DATA_YS_FREYA,
+    DATA_YS_THORIM,
+    DATA_YS_MIMIRON,
+    DATA_YS_HODIR,
+    DATA_YOGGSARON_BRAIN,
+    DATA_YOGGSARON,
+	DATA_STONEBARK,
+	DATA_SARA,
+	DATA_GUARDIANS,
+	DATA_CLOUD,
+	DATA_TRIGGER,
+	DATA_UNV_WACHE,
+	DATA_SARATRANS
+};
+
+
+enum Data
+{
+    DATA_LEVIATHAN_DOOR,
+    DATA_RUNIC_DOOR,
+    DATA_STONE_DOOR,
+    DATA_CALL_TRAM,
+    DATA_MIMIRON_ELEVATOR,
+    DATA_HODIR_RARE_CHEST
+};
+
 #endif
