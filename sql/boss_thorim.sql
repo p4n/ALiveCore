@@ -1,6 +1,8 @@
 -- Thorim
--- WDB/Sniff
-UPDATE `creature_template` SET `faction_A`=14,`faction_H`=14,WHERE `entry` IN (32882,32908,32885,33110);
+-- WDB Sniff
+
+
+UPDATE creature_template SET faction_A = 14, faction_H = 14 WHERE entry IN (32882,32908,32885,33110);
 UPDATE `creature_template` SET `unit_flags`=0,`faction_A`=14,`faction_H`=14 WHERE `entry` IN (32876,32904,32878,32877,32874,32875);
 UPDATE `creature_template` SET `flags_extra`=2 WHERE `entry` IN (32892,32879,32780,33140,33141);
 UPDATE `creature_template` SET `unit_flags`=`unit_flags`|33686020 WHERE `entry`=33378;
@@ -12,7 +14,7 @@ UPDATE `creature_template` SET `flags_extra`=2 WHERE `entry`=32892;
 UPDATE `creature_template` SET `dmgschool`=4,`dmg_multiplier`=7.5,`unit_flags`=33587202 WHERE `entry`=33196;
 UPDATE `creature_template` SET `vehicleId`=336 WHERE `entry`=33432; -- Leviathan Mk II
 UPDATE `creature_template` SET `unit_flags`=0,`type_flags`=8 WHERE `entry`=32865;
-UPDATE `creature_template` SET `faction_A`=14,`faction_H`=14 WHERE `entry` IN (32882,32908,32885,33110);
+UPDATE creature_template SET faction_A = 14, faction_H = 14 WHERE entry IN (32882,32908,32885,33110);
 UPDATE `creature_template` SET `unit_flags`=0,`faction_A`=14,`faction_H`=14 WHERE `entry` IN (32876,32904,32878,32877,32874,32875);
 
 -- Other Updates
@@ -34,7 +36,7 @@ INSERT INTO `creature` (`guid`,`id`,`map`,`spawnMask`,`phaseMask`,`modelid`,`equ
 DELETE FROM `spell_linked_spell` WHERE `spell_trigger`=62042;
 INSERT INTO `spell_linked_spell` (`spell_trigger`,`spell_effect`,`type`,`comment`) VALUES
 (62042,62470,1, 'Thorim: Deafening Thunder');
--- Thorim Apparel / Orb!
+-- Thorim Apparel  Orb!
 DELETE FROM `conditions` WHERE `SourceEntry`=62016;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`,`SourceGroup`,`SourceEntry`,`ElseGroup`,`ConditionTypeOrReference`,`ConditionValue1`,`ConditionValue2`,`ConditionValue3`,`ErrorTextId`) VALUES (13,0,62016,0,18,1,33378,0,0);
 
@@ -53,7 +55,7 @@ INSERT INTO `creature_addon` (`guid`,`path_id`,`mount`,`bytes1`,`bytes2`,`emote`
 
 DELETE FROM creature WHERE id=34071;
 DELETE FROM vehicle_accessory WHERE entry=33432;
-INSERT INTO vehicle_accessory VALUE (33432,34071,7,1, 'Leviathan Mk II turret');
+INSERT INTO vehicle_accessory VALUE (33432,34071,7,1, 'Leviathan Mk II turret', 0, 0);
 DELETE FROM `creature_model_info` WHERE `modelid`=28831;
 INSERT INTO `creature_model_info` (`modelid`,`bounding_radius`,`combat_reach`,`gender`,`modelid_other_gender`) VALUES
 (28831,0.5,7,2,0);
