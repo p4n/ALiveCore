@@ -90,6 +90,15 @@ enum eBossNPCs
 	NPC_CLOUD                   = 33292,
 	NPC_SARATRANS               = 34313,
 	NPC_UNVER_WACHE             = 33988,
+
+
+
+	NPC_LEFT_ARM = 32933,
+    NPC_RIGHT_ARM = 32934,
+    NPC_RUBBLE                  = 33768,
+    NPC_FOCUSED_EYEBEAM = 33632,
+    NPC_FOCUSED_EYEBEAM_RIGHT = 33802,
+
 };
 
 enum eTowerEvents
