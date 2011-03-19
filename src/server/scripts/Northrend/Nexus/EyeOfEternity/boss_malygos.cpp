@@ -2010,8 +2010,39 @@ class go_malygos_iris : public GameObjectScript
         } 
 };
 
+enum Talks
+{
+    SAY_OUTRO_1                     = -1616030,
+    SAY_OUTRO_2                     = -1616031,
+    SAY_OUTRO_3                     = -1616032,
+    SAY_OUTRO_4                     = -1616033,
+    SAY_OUTRO_5                     = -1616034,
+};
+
+class npc_alexsrtaza : public CreatureScript
+{
+public:
+    npc_alexsrtaza() : CreatureScript("npc_alexsrtaza") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_alexstrazaAI(pCreature);
+    }
+
+    struct npc_alexstrazaAI : public ScriptedAI
+    {
+        InstanceScript* m_pInstance;
+
+        npc_alexstrazaAI(Creature* pCreature) : ScriptedAI(pCreature)
+        {
+            m_pInstance = (InstanceScript*)pCreature->GetInstanceScript();
+        }
+    };
+};
+
 void AddSC_boss_malygos()
 {
+	new npc_alexsrtaza();
     new boss_malygos();
     new mob_power_spark();
     new mob_scion_of_eternity();
