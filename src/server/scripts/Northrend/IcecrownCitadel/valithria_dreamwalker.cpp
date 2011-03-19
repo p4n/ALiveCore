@@ -1,43 +1,72 @@
 /*
- * Copyright (C) 2009 - 2010 WoW-ALive <http://www.wow-alive.de/>
+ * Copyright (C) 2009 - 2011 WoW-ALive <http://www.wow-alive.de/>
+ * Kudos to bolvor & soe for base scripts ;)
  */
 
 #include "ScriptPCH.h"
 #include "icecrown_citadel.h"
 
-enum Yells
+enum ScriptTexts
 {
-    SAY_AGGRO       = -1666063,
-    SAY_BELOW_25    = -1666066,
-    SAY_ABOVE_75    = -1666065,
-    SAY_DEATH       = -1666067,
-    SAY_PDEATH      = -1666068,
-    SAY_END         = -1666070,
-    SAY_BERSERK     = -1666069,
-    SAY_OPEN_PORTAL = -1666064
+    SAY_AGGRO       = 0,
+    SAY_OPEN_PORTAL = 1,
+    SAY_ABOVE_75    = 2,
+    SAY_BELOW_25    = 3,
+    SAY_DEATH       = 4,
+    SAY_PDEATH      = 5,
+    SAY_BERSERK     = 6,
+    SAY_END         = 7,
 };
 
 enum Spells
 {
-    SPELL_CORRUPTION    = 70904,
+    SPELL_CORRUPTION    = 70904, /* 25H 70602 */
     SPELL_DREAM_SLIP    = 71196,
     SPELL_RAGE          = 71189,
-    SPELL_VOLLEY        = 70759,
-    SPELL_COLUMN        = 70704,
+    SPELL_VOLLEY        = 70759, /* 25H 72016 */
+    SPELL_COLUMN        = 70704, /*  */
     SPELL_COLUMN_AURA   = 70702,
-    SPELL_MANA_VOID     = 71085,
+    SPELL_COLUMN_VISUAL = 70715, 
+    SPELL_MANA_VOID     = 71085, /* 25H 71743 */
     SPELL_CORRUPTING    = 70602,
-    SPELL_WASTE         = 69325,
-    SPELL_FIREBALL      = 70754,
+    SPELL_WASTE         = 69325, /* 25H 72028  */
+    SPELL_FIREBALL      = 70754, /* 25H 72024  */
     SPELL_SUPRESSION    = 70588,
-    SPELL_CORROSION     = 70751,
+    SPELL_CORROSION     = 70751, /* 25H 72022 */
+
     SPELL_BURST         = 70744,
-    SPELL_SPRAY         = 71283,
+/*
+    SPELL_BURST_10H     = 72017,
+    SPELL_BURST_25      = 71733,
+    SPELL_BURST_25H     = 72018,
+*/
+    SPELL_SPRAY         = 70633,
+/*
+    SPELL_SPRAY_25      = 71283,
+    SPELL_SPRAY_25H     = 72026,
+*/ 
     SPELL_ROT           = 72963,
     SPELL_DREAM_STATE   = 70766,
+    
     SPELL_PORTAL_VISUAL = 71304,
+    SPELL_PORTAL_N_PRE  = 71301,
+    SPELL_PORTAL_N_NPC  = 71305,
+    SPELL_PORTAL_H_PRE  = 71977,
+    SPELL_PORTAL_H_NPC  = 71987,
+
+
     SPELL_VIGOR         = 70873,
     SPELL_CLOUD_VISUAL  = 70876
+};
+
+enum Events
+{
+    EVENT_SUMMON_DREAMCLOUD     = 1,    // Timer: ValiAlternative spawnt Clouds
+    EVENT_VALITHRIA_TRIGGER     = 2,    // Combat Trigger greift Vali an
+    EVENT_CHANGE_PORTAL         = 3,    // Timer: Portale wachsen
+    EVENT_SKELLMAGE_VOLLEY      = 4,
+    EVENT_SKELLMAGE_COLUMN      = 5,
+    EVENT_SKELLMAGE_VOID        = 6,
 };
 
 const Position Pos[] =
@@ -48,18 +77,12 @@ const Position Pos[] =
     {4166.216797f, 2564.197266f, 364.873047f, 0.0f}
 };
 
-Unit* pValithria;
-Unit* pPlayer;
-Unit* pBuff;
-Unit* pTrigger;
-
-uint8 Valitria_aggro_trigger;
-uint64 pValithriaGIUID;
-
-Creature* combat_trigger= NULL;
 
 class boss_valithria : public CreatureScript
 {
+    private:
+        
+        
     public:
         boss_valithria() : CreatureScript("boss_valithria") { }
 
@@ -67,72 +90,110 @@ class boss_valithria : public CreatureScript
         {
             boss_valithriaAI(Creature* pCreature) : BossAI(pCreature, DATA_VALITHRIA_DREAMWALKER), summons(me)
             {
-                pInstance = me->GetInstanceScript();
             }
 
-            InstanceScript* pInstance;
-
-            uint8 m_uiStage;
-            uint32 summonphase;
-            uint32 m_uiPortalTimer;
-            uint32 m_uiEndTimer;
-            uint32 m_uiSummonTimer;
+            Creature* combat_trigger;
+            Unit* pValithria;
+            Unit* pPlayer;
+            Unit* pBuff;
+            Unit* pTrigger;
+            
+            uint8 uiStage;
+            uint8 uiCloudCount;
+            //uint32 uiSummonPhase;
+            uint32 uiPortalTimer;
+            uint32 uiEndTimer;
+            uint32 uiSummonTimer;
+            uint32 uiCloudTimer;
             bool bIntro;
             bool bEnd;
             bool bAboveHP;
             bool bBelowHP;
             SummonList summons;
-
+            
             void Reset()
             {
-                me->SummonCreature(2000008, 4243.733398, 2484.454346, 364.870422, 0.016479, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3600000);
+                // vali_trigger
+                //me->SummonCreature(2000008, 4243.733398, 2484.454346, 364.870422, 0.016479, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3600000);
 
-                m_uiStage = 1;
+                uiStage = 1;
+                //pValithriaGIUID = me->GetGUID();
 
-                pValithriaGIUID = me->GetGUID();
-
-                DoCast(me, SPELL_CORRUPTION);
-                me->SetHealth(uint32(me->GetMaxHealth() * 0.50));
-
-                m_uiSummonTimer = 15000;
-                m_uiPortalTimer = 30000;
-                m_uiEndTimer = 1000;
+                
+                uiSummonTimer = 5000;
+                uiPortalTimer = 30000;
+                uiEndTimer = 1000;
+                uiCloudTimer = 10000;
+                uiCloudCount = 0;
 
                 bIntro = false;
                 bEnd = false;
                 bAboveHP = false;
                 bBelowHP = false;
 
-                summonphase = 0;
-
-                 Valitria_aggro_trigger = 0;
+                //uiSummonPhase = 0;
+                if(summons.size() > 0)
+                    summons.DespawnAll();
+                
+                if(instance)
+                    instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, NOT_STARTED);
 
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-
-                //if (pInstance && me->isAlive())
-                    //pInstance->SetData(DATA_VALITHRIA_DREAMWALKER_EVENT, IN_PROGRESS);
+                DoCast(me, SPELL_CORRUPTION);
+                me->SetHealth(uint32(me->GetMaxHealth() * 0.50));
             }
 
             void MoveInLineOfSight(Unit *who)
             {
+                Player* player = (Player*) who;
+                if(player->isGameMaster())
+                    return;
+                if (!bIntro && me->IsWithinDistInMap(who, 50.0f) ){
+                    bIntro = true;
+                }
+                if (instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == NOT_STARTED 
+                    && me->IsWithinDistInMap(who, 50.0f))
+                {
+                    instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, IN_PROGRESS);
+                    
+                    if(!bIntro){
+                        Talk(SAY_AGGRO);
+                        bIntro = true;
+                        me->SetHealth(uint32(me->GetMaxHealth() * 0.50));
+                    }
+                }
+
+                if (instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == IN_PROGRESS 
+                    && !me->IsWithinDistInMap(who, 120.0f, true))
+                {
+                    instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, FAIL);
+                    me->CombatStop();
+                }
+
             }
 
             void EnterCombat(Unit* /*pWho*/) 
             {
-                //if (pInstance)
-                    //pInstance->SetData(DATA_VALITHRIA_DREAMWALKER, IN_PROGRESS);
+                DoZoneInCombat();
+                if (instance)
+                    instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, IN_PROGRESS);
+                if(!bIntro){
+                    Talk(SAY_AGGRO);
+                    bIntro = true;
+                    me->SetHealth(uint32(me->GetMaxHealth() * 0.50));
+                }
             }
 
             void JustSummoned(Creature* pSummoned)
             {
                 if (pSummoned && !pSummoned->HasAura(SPELL_PORTAL_VISUAL))
                     pSummoned->AI()->AttackStart(me);
-
                 summons.Summon(pSummoned);
             }
 
             void ResetEvent()
             {
+                /*
                 Map::PlayerList const &PlList = me->GetMap()->GetPlayers();
 
                 if (PlList.isEmpty())
@@ -144,11 +205,11 @@ class boss_valithria : public CreatureScript
                     {
                         if (pPlayer && pPlayer->isDead() && me->isAlive())
                         {
-                            //if (pInstance)
-                                //pInstance->SetData(DATA_VALITHRIA_DREAMWALKER_EVENT, FAIL);
+                            //if (instance)
+                                //instance->SetBossState(DATA_VALITHRIA_DREAMWALKER_EVENT, FAIL);
                         }
                     }
-                }
+                }*/ 
             }
 
             void HeroicSummon(uint8 coords)
@@ -157,162 +218,218 @@ class boss_valithria : public CreatureScript
 
             void JustDied(Unit* /*pKiller*/)
             {
+                Talk(SAY_DEATH); 
                 // DoScriptText(SAY_DEATH, me);
 
                 summons.DespawnAll();
-
-                //if (pInstance)
-                    //pInstance->SetData(DATA_VALITHRIA_DREAMWALKER_EVENT, FAIL);
+                
+                if (instance)
+                    instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, FAIL);
             }
 
             void UpdateAI(const uint32 diff)
             {
 
-                    DoStartNoMovement(me->getVictim());
+                DoStartNoMovement(me->getVictim());
 
-                  if (Valitria_aggro_trigger == 1)
-                  {
-                     if (summonphase == 0)
-                     {
-                        if (m_uiSummonTimer <= diff)
-                        {
-                           urand(0,1); me->SummonCreature(CREATURE_ZOMBIE, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_ZOMBIE, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           summonphase == 1;
-                           m_uiSummonTimer = 40000;
-                        } else m_uiSummonTimer -= diff;
-                     }
-                  }
-  
-                  if (Valitria_aggro_trigger == 1)
-                  {
-                     if (summonphase == 1)
-                     {
-                        if (m_uiSummonTimer <= diff)
-                        {
-                           urand(0,1); me->SummonCreature(CREATURE_SKELETON, 4241.379395, 2423.439941, 364.868439, 1.579425, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_SKELETON, 4241.379395, 2423.439941, 364.868439, 1.579425, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           summonphase == 2;
-                           m_uiSummonTimer = 40000;
-                        } else m_uiSummonTimer -= diff;
-                     }
-                  }
-
-                  if (Valitria_aggro_trigger == 1)
-                  {
-                     if (summonphase == 2)
-                     {
-                        if (m_uiSummonTimer <= diff)
-                        {
-                           urand(0,1); me->SummonCreature(CREATURE_ABOMINATION, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           summonphase == 3;
-                           m_uiSummonTimer = 40000;
-                        } else m_uiSummonTimer -= diff;
-                     }
-                  }
-
-                  if (Valitria_aggro_trigger == 1)
-                  {
-                     if (summonphase == 3)
-                     {
-                        if (m_uiSummonTimer <= diff)
-                        {
-                           urand(0,1); me->SummonCreature(CREATURE_ARCHMAGE, 4241.379395, 2423.439941, 364.868439, 1.579425, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_ARCHMAGE, 4241.379395, 2423.439941, 364.868439, 1.579425, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_ARCHMAGE, 4241.379395, 2423.439941, 364.868439, 1.579425, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           summonphase == 4;
-                           m_uiSummonTimer = 40000;
-                        } else m_uiSummonTimer -= diff;
-                     }
-                  }
-
-                  if (Valitria_aggro_trigger == 1)
-                  {
-                     if (summonphase == 4)
-                     {
-                        if (m_uiSummonTimer <= diff)
-                        {
-                           urand(0,1); me->SummonCreature(CREATURE_SUPPRESSER, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_SUPPRESSER, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_SUPPRESSER, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_SUPPRESSER, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           urand(0,1); me->SummonCreature(CREATURE_SUPPRESSER, 4241.539551, 2546.322021, 364.867554, 4.717079, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 36000000);
-                           summonphase == 0;
-                           m_uiSummonTimer = 40000;
-                        } else m_uiSummonTimer -= diff;
-                     }
-                  }
-
-                    if (m_uiPortalTimer <= diff)
+                if (!instance || instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
+                    return;
+                    
+                if (uiSummonTimer <= diff)
+                {
+                    for (uint8 coords = 0; coords <= RAID_MODE(1,3,1,3); ++coords)
                     {
-                        // DoScriptText(SAY_OPEN_PORTAL, me);
-
-                        me->SummonCreature(CREATURE_PORTAL, me->GetPositionX()+15, me->GetPositionY()+15, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
-                        me->SummonCreature(CREATURE_PORTAL, me->GetPositionX()+10, me->GetPositionY()+25, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
-                        me->SummonCreature(CREATURE_PORTAL, me->GetPositionX()+15, me->GetPositionY()-25, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
-                        m_uiPortalTimer = 30000;
-                    } else m_uiPortalTimer -= diff;
-
-                    if (!bAboveHP && (HealthAbovePct(74)))
-                    {
-                        // DoScriptText(SAY_ABOVE_75, me);
-                        bAboveHP = true;
+                        /*
+                            1    Z
+                            2    ZS
+                            3    ZS
+                            4    MZ
+                            5    MS
+                            6    ZA
+                            7    A
+                            8    U
+                            9    UM
+                        */
+                        uint32 rand = urand(0,10);
+                        sLog->outError("Rand: %d",rand);
+                        if(rand <= 4 || rand == 6) 
+                            DoSummon(CREATURE_ZOMBIE, Pos[coords], 36000000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+                        if(rand == 2 || rand == 3 || rand == 5) 
+                            DoSummon(CREATURE_SKELETON, Pos[coords], 36000000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+                        if(rand == 6 || rand == 7) 
+                            DoSummon(CREATURE_ABOMINATION, Pos[coords], 36000000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+                        if(rand == 4 || rand == 5 || rand >= 9) 
+                            DoSummon(CREATURE_ARCHMAGE, Pos[coords], 36000000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
+                        if(rand >= 8) 
+                            DoSummon(CREATURE_SUPPRESSER, Pos[coords], 36000000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                     }
-
-                    if (!bBelowHP && (HealthBelowPct(26)))
+                    uiSummonTimer = 20000;
+                } else uiSummonTimer -= diff;
+                    
+                if (uiPortalTimer <= diff)
+                {
+                    Talk(SAY_OPEN_PORTAL);
+                    for(uint8 p = 0; p < RAID_MODE(3,8,3,8); ++p)
                     {
-                        // DoScriptText(SAY_BELOW_25, me);
-                        bBelowHP = true;
+                        DoCast(RAID_MODE(SPELL_PORTAL_N_PRE,SPELL_PORTAL_N_PRE,SPELL_PORTAL_H_PRE,SPELL_PORTAL_H_PRE));
                     }
-
-                    if ((HealthAbovePct(99)) && !bEnd)
-                    {
-                        // DoScriptText(SAY_END, me);
-                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                        me->SetReactState(REACT_PASSIVE);
-                        me->RemoveAurasDueToSpell(SPELL_CORRUPTION);
-
-                        bEnd = true;
+                    
+                    //me->SummonCreature(CREATURE_PORTAL, me->GetPositionX()+15, me->GetPositionY()+15, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    //me->SummonCreature(CREATURE_PORTAL, me->GetPositionX()+10, me->GetPositionY()+25, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    //me->SummonCreature(CREATURE_PORTAL, me->GetPositionX()+15, me->GetPositionY()-25, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    uiPortalTimer = 30000;
+                } else uiPortalTimer -= diff;
+                
+                if (uiCloudTimer <= diff)
+                {
+                    if(uiCloudCount < 15){
+                        float x, y, z;
+                        me->GetPosition(x,y,z);
+                    
+                        for(uint8 i = 0; i <= RAID_MODE(2,6,2,6); ++i) 
+                            me->SummonCreature(CREATURE_CLOUD, x + (urand(2, 6) * 10), y + (urand(1, 4) * 10), z + urand(2,8), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
                     }
+                    uiCloudTimer = 10000;
+                } else uiCloudTimer -= diff;
 
-                    if(bEnd)
+                if (!bAboveHP && (HealthAbovePct(74)))
+                {
+                    Talk(SAY_ABOVE_75); 
+                    // DoScriptText(SAY_ABOVE_75, me);
+                    bAboveHP = true;
+                }
+
+                if (!bBelowHP && (HealthBelowPct(26)))
+                {
+                    Talk(SAY_BELOW_25); 
+                    // DoScriptText(SAY_BELOW_25, me);
+                    bBelowHP = true;
+                }
+
+                if ((HealthAbovePct(99)) && !bEnd)
+                {
+                    Talk(SAY_END); 
+                    // DoScriptText(SAY_END, me);
+                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                    me->SetReactState(REACT_PASSIVE);
+                    me->RemoveAurasDueToSpell(SPELL_CORRUPTION);
+
+                    bEnd = true;
+                    uiStage = 1;
+                    sLog->outError("Vali: health > 99, end = true");
+                }
+
+                if(bEnd && uiStage < 4)
+                {
+                    if (uiEndTimer <= diff)
                     {
-                        if (m_uiEndTimer <= diff)
+                        switch(uiStage)
                         {
-                            switch(m_uiStage)
-                            {
-                                case 1:
-                                    // DoScriptText(SAY_BERSERK , me);
-                                    DoCast(me, SPELL_RAGE);
-                                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                                    ++m_uiStage;
-                                    m_uiEndTimer = 6000;
-                                    break;
-                                case 2:
-                                    {
-                                        combat_trigger->ForcedDespawn();
-                                        DoCast(me, SPELL_DREAM_SLIP, true);
-                                        ++m_uiStage;
-                                        m_uiEndTimer = 1000;
-                                    }
-                                    break;
-                                case 3:
-                                    //if (pInstance)
-                                        //pInstance->SetData(DATA_VALITHRIA_DREAMWALKER_EVENT, DONE);
-                                    me->ForcedDespawn();
-                                    m_uiEndTimer = 1000;
-                                    bEnd = false;
-                                    ++m_uiStage;
-                                    break;
-                            }
-                        } else m_uiEndTimer -= diff;
-                    }
+                            case 1:
+                                // DoScriptText(SAY_BERSERK , me);
+                                Talk(SAY_BERSERK);
+                                DoCast(me, SPELL_RAGE);
+                                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                                uiStage = 2;
+                                uiEndTimer = 6000;
+                                sLog->outError("Vali, end stage 1 done");
+                                break;
+                            case 2:
+                                //combat_trigger->ForcedDespawn();
+                                DoCast(me, SPELL_DREAM_SLIP, true);
+                                uiStage = 3;
+                                uiEndTimer = 1000;
+                                sLog->outError("Vali, end stage 2 done");
+                                break;
+                            case 3:
+                                if (instance)
+                                    instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, DONE);
+                                //me->ForcedDespawn();
+                                uiEndTimer = 1000;
+                                uiStage = 4;
+                                sLog->outError("Vali, end stage 3 done");
+                                break;
+                        }
+                    } else uiEndTimer -= diff;
+                }
             }
         };
 
+        
         CreatureAI* GetAI(Creature* pCreature) const
         {
             return new boss_valithriaAI(pCreature);
+        }
+};
+
+class npc_valithria_alternative : public CreatureScript
+{
+    public:
+        npc_valithria_alternative() : CreatureScript("npc_valithria_alternative") { }
+
+        struct npc_valithria_alternativeAI : public ScriptedAI
+        {
+            npc_valithria_alternativeAI(Creature* creature) : ScriptedAI(creature), summons(me)
+            {
+                instance = creature->GetInstanceScript();
+            }
+            
+
+            void Reset()
+            {
+                me->SetPhaseMask(16, true);
+                me->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+                me->SendMovementFlagUpdate();
+                me->SetFlying(true);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                summons.DespawnAll();
+                if(instance)
+                    instance->SetData(DATA_VALITHRIA_CLOUDS, 0);
+
+                events.Reset();
+                events.ScheduleEvent(EVENT_SUMMON_DREAMCLOUD, 5000);
+            }
+            
+            void JustSummoned(Creature* summoned)
+            {
+                summons.Summon(summoned);
+                if(instance)
+                    instance->SetData(DATA_VALITHRIA_CLOUDS, +1);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                events.Update(diff);
+
+                if (!instance || instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != IN_PROGRESS)
+                    return;
+                
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    float x, y, z;
+                    me->GetPosition(x,y,z);
+                    switch (eventId)
+                    {
+                        case EVENT_SUMMON_DREAMCLOUD:
+                            if(instance->GetData(DATA_VALITHRIA_CLOUDS) < RAID_MODE(10,16,10,16))
+                                me->SummonCreature(CREATURE_CLOUD, x + (urand(2, 6) * 10), y + (urand(1, 4) * 10), z + urand(2,8), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                            events.ScheduleEvent(EVENT_SUMMON_DREAMCLOUD, 5000);
+                            break;
+                    }
+                }
+            }
+
+        private:
+            InstanceScript* instance;
+            EventMap events;
+            SummonList summons;
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_valithria_alternativeAI(creature);
         }
 };
 
@@ -325,8 +442,10 @@ class npc_dreamportal_icc : public CreatureScript
         {
             npc_dreamportal_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
+            
+            Unit* pPlayer;
 
             void InitializeAI()
             {
@@ -337,22 +456,26 @@ class npc_dreamportal_icc : public CreatureScript
                 ScriptedAI::InitializeAI();
             }
 
+            void Reset()
+            {
+                uiChangeTimer = 10000;
+            }
+
+
             void MoveInLineOfSight(Unit *who)
             {
                 if (who->IsControlledByPlayer())
                 {
-                    if (me->IsWithinDistInMap(who,5.0f))
+                    if (me->IsWithinDistInMap(who,4.0f) && (
+                        me->GetEntry() == CREATURE_PORTAL_NORMAL_MODE_NPC ||
+                        me->GetEntry() == CREATURE_PORTAL_HEROIC_MODE_NPC) )
                     {
                         pPlayer = who;
                         pPlayer->CastSpell(pPlayer, SPELL_DREAM_STATE, false, 0, 0, 0);
                         pPlayer->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
                         pPlayer->SendMovementFlagUpdate();
-                        m_uiStateTimer = 15000;
-                        me->ForcedDespawn();
-                        me->SummonCreature(CREATURE_CLOUD, me->GetPositionX()-15, me->GetPositionY()+15,me->GetPositionZ()+20, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
-                        me->SummonCreature(CREATURE_CLOUD, me->GetPositionX()+30, me->GetPositionY()-15,me->GetPositionZ()+23, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
-                        me->SummonCreature(CREATURE_CLOUD, me->GetPositionX()-17, me->GetPositionY()+40,me->GetPositionZ()+17, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
-                        me->SummonCreature(CREATURE_CLOUD, me->GetPositionX()+24, me->GetPositionY()-40,me->GetPositionZ()+20, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
+                        uiStateTimer = 15000;
+                        //me->ForcedDespawn();
                     }
                 }
             }
@@ -361,18 +484,37 @@ class npc_dreamportal_icc : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
+                if(me->GetEntry() == CREATURE_PORTAL_NORMAL_MODE_PRE)
+                {
+                    if (uiChangeTimer <= diff)
+                        me->UpdateEntry(CREATURE_PORTAL_NORMAL_MODE_NPC);
+                    else uiChangeTimer -= diff;
+                }
 
-                if (m_uiStateTimer <= diff)
+                if(me->GetEntry() == CREATURE_PORTAL_HEROIC_MODE_PRE)
+                {
+                    if (uiChangeTimer <= diff)
+                        me->UpdateEntry(CREATURE_PORTAL_HEROIC_MODE_NPC);
+                    else uiChangeTimer -= diff;
+                }
+                
+                /*
+                TODO: nochmal überdenken..
+                */
+                if (uiStateTimer <= diff)
                 {
                     pPlayer->RemoveAurasDueToSpell(SPELL_DREAM_STATE);
                     pPlayer->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
                     pPlayer->SendMovementFlagUpdate();
-                } else m_uiStateTimer -= diff;
+                } else uiStateTimer -= diff;
             }
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
 
-            uint32 m_uiStateTimer;
+            uint32 uiStateTimer;
+            uint32 uiChangeTimer;
+
+
         };
 
         CreatureAI* GetAI(Creature* pCreature) const
@@ -390,64 +532,53 @@ class npc_skellmage_icc : public CreatureScript
         {
             npc_skellmage_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
 
             void Reset()
             {
-                m_uiVolleyTimer = 12000;
-                m_uiColumnTimer = 20000;
-                m_uiVoidTimer = 30000;
-            }
-
-            void EnterCombat(Unit* /*who*/)
-            {
-                //if (pInstance && pInstance->GetData(DATA_VALITHRIA_DREAMWALKER_EVENT) == NOT_STARTED)
-                    //pInstance->SetData(DATA_VALITHRIA_DREAMWALKER_EVENT, IN_PROGRESS);
-            }
-
-            void KilledUnit(Unit* /*victim*/)
-            {
-                // DoScriptText(SAY_PDEATH, pValithria);
+                events.Reset();
+                events.ScheduleEvent(EVENT_SKELLMAGE_VOLLEY,    10000);
+                events.ScheduleEvent(EVENT_SKELLMAGE_COLUMN,    20000);
+                events.ScheduleEvent(EVENT_SKELLMAGE_VOID,      30000);
             }
 
             void UpdateAI(const uint32 diff)
             {
+                if(!instance || instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != IN_PROGRESS)
+                    me->DespawnOrUnsummon();
+                
                 if (!UpdateVictim())
                     return;
+                
+                events.Update(diff);
 
-                if (m_uiVolleyTimer <= diff)
+                while (uint32 eventId = events.ExecuteEvent())
                 {
-                    if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
-                        DoCast(pTarget, SPELL_VOLLEY);
-                    m_uiVolleyTimer = 15000;
-                } else m_uiVolleyTimer -= diff;
-
-                if (m_uiVoidTimer <= diff)
-                {
-                    if(Unit* pTarget = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
-                        me->SummonCreature(CREATURE_VOID, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
-                    m_uiVoidTimer = 30000;
-                } else m_uiVoidTimer -= diff;
-
-                if (m_uiColumnTimer <= diff)
-                {
-                    Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1);
-                    if(pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
+                    switch (eventId)
                     {
-                        DoCast(pTarget, SPELL_COLUMN);
+                        case EVENT_SKELLMAGE_VOLLEY:
+                            if(Unit* pTarget = SelectTarget(SELECT_TARGET_TOPAGGRO, 0))
+                                DoCast(pTarget, SPELL_VOLLEY);
+                            events.ScheduleEvent(EVENT_SKELLMAGE_VOLLEY, urand(10000, 16000));
+                            break;
+                        case EVENT_SKELLMAGE_COLUMN:
+                            if(Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                                DoCast(pTarget, SPELL_COLUMN);
+                            events.ScheduleEvent(EVENT_SKELLMAGE_COLUMN, urand(10000, 20000));
+                            break;
+                        case EVENT_SKELLMAGE_VOID:
+                            if(Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                                DoCast(pTarget, SPELL_COLUMN);
+                            events.ScheduleEvent(EVENT_SKELLMAGE_VOID, urand(16000, 25000));
+                            break;
                     }
-                    m_uiColumnTimer = 20000;
-                } else m_uiColumnTimer -= diff;
-
+                }
                 DoMeleeAttackIfReady();
             }
         private:
-            InstanceScript* pInstance;
-
-            uint32 m_uiVolleyTimer;
-            uint32 m_uiColumnTimer;
-            uint32 m_uiVoidTimer;
+            InstanceScript* instance;
+            EventMap events;
         };
 
         CreatureAI* GetAI(Creature* pCreature) const
@@ -465,7 +596,7 @@ class npc_fireskell_icc : public CreatureScript
         {
             npc_fireskell_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
 
             void Reset()
@@ -483,6 +614,8 @@ class npc_fireskell_icc : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
+                if(instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
+                    me->DespawnOrUnsummon();
                 if (!UpdateVictim())
                     return;
 
@@ -502,7 +635,7 @@ class npc_fireskell_icc : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
 
             uint32 m_uiWasteTimer;
             uint32 m_uiFireballTimer;
@@ -523,12 +656,13 @@ class npc_suppressor_icc : public CreatureScript
         {
             npc_suppressor_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
 
             void Reset()
             {
-                me->CastSpell(pValithria, SPELL_SUPRESSION, true, 0, 0, 0);
+                if(instance && instance->GetData64(DATA_VALITHRIA_DREAMWALKER))
+                    me->CastSpell(instance->GetData64(DATA_VALITHRIA_DREAMWALKER), SPELL_SUPRESSION, true, 0, 0, 0);
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -541,10 +675,18 @@ class npc_suppressor_icc : public CreatureScript
             {
                 if (!UpdateVictim())
                     return;
-
+                if(instance)
+                {
+                    if(instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
+                        me->DespawnOrUnsummon();
+                    if(instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == IN_PROGRESS){
+                        Unit* valithria = Unit::GetUnit((*me), instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
+                        me->CastSpell(valithria, SPELL_SUPRESSION, true, 0, 0, 0);
+                    }
+                }
             }
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
 
             uint32 m_uiCheckTimer;
         };
@@ -564,7 +706,7 @@ class npc_manavoid_icc : public CreatureScript
         {
             npc_manavoid_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
 
             void Reset()
@@ -573,9 +715,20 @@ class npc_manavoid_icc : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                 DoStartNoMovement(me->getVictim());
             }
-
+            
+            void UpdateAI(const uint32 diff)
+            {
+                if(instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
+                    me->DespawnOrUnsummon();
+                if (uiLiveTimer <= diff)
+                {
+                    me->Kill(me);
+                } else uiLiveTimer -= diff;
+            }
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
+
+            uint32 uiLiveTimer;
         };
 
         CreatureAI* GetAI(Creature* pCreature) const
@@ -593,7 +746,7 @@ class npc_glutabomination_icc : public CreatureScript
         {
             npc_glutabomination_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
 
             void EnterCombat(Unit* /*who*/) { }
@@ -618,6 +771,8 @@ class npc_glutabomination_icc : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
+                if(instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
+                    me->DespawnOrUnsummon();
                 if (!UpdateVictim())
                     return;
 
@@ -630,7 +785,7 @@ class npc_glutabomination_icc : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
 
             uint32 m_uiSprayTimer;
         };
@@ -650,7 +805,7 @@ class npc_blistzombie_icc : public CreatureScript
         {
             npc_blistzombie_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
 
             void EnterCombat(Unit* /*who*/) { }
@@ -668,6 +823,8 @@ class npc_blistzombie_icc : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
+                if(instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == DONE)
+                    me->DespawnOrUnsummon();
                 if (!UpdateVictim())
                     return;
 
@@ -687,7 +844,7 @@ class npc_blistzombie_icc : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
 
             uint32 m_uiBurstTimer;
             uint32 m_uiDelayTimer;
@@ -708,7 +865,7 @@ class npc_dreamcloud_icc : public CreatureScript
         {
             npc_dreamcloud_iccAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
 
             void Reset()
@@ -723,21 +880,46 @@ class npc_dreamcloud_icc : public CreatureScript
 
             void MoveInLineOfSight(Unit *who)
             {
-                if (me->IsWithinDistInMap(who, 5.0f))
+                if (me->IsWithinDistInMap(who, 3.0f))
                 {
                     DoCast(SPELL_VIGOR);
-                    me->AddAura(SPELL_VIGOR, who);
+                    if(who->HasAura(SPELL_VIGOR))
+                        me->SetAuraStack(SPELL_VIGOR, who, who->GetAuraCount(SPELL_VIGOR)+1);
+                    else
+                        me->AddAura(SPELL_VIGOR, who);
+                    instance->SetData(DATA_VALITHRIA_CLOUDS, -1);   
                     me->SetVisible(false);
                     me->Kill(me);
-
-
                 }
             }
+            
+            /*void IsSummonedBy(Unit* owner)
+            {
+                if (owner->GetTypeId() != TYPEID_UNIT)
+                    return;
 
+                Creature* creOwner = owner->ToCreature();
+                Position pos;
+                
+                Position const* ownerPos = marrowgarAI->GetLastColdflamePosition();
+                float ang = me->GetAngle(ownerPos) - static_cast<float>(M_PI);
+                MapManager::NormalizeOrientation(ang);
+                me->SetOrientation(ang);
+                owner->GetNearPosition(pos, urand(10,50) * 1.0f, 0.0f);
+            
+
+                me->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
+                events.ScheduleEvent(EVENT_COLDFLAME_TRIGGER, 200);
+            }*/
             void UpdateAI(const uint32 diff) { }
 
+            void SetOwnerGUID(const uint32 guid){
+                ownerGUID = guid;
+            }
+
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
+            uint32 ownerGUID;
         };
 
         CreatureAI* GetAI(Creature* pCreature) const
@@ -755,22 +937,31 @@ class npc_icc_column_stalker : public CreatureScript
         {
             npc_icc_column_stalkerAI(Creature* pCreature) : ScriptedAI(pCreature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = pCreature->GetInstanceScript();
             }
-
+            
             void Reset()
             {
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE);
                 me->SetInCombatWithZone();
                 DoStartNoMovement(me->getVictim());
-                DoCast(SPELL_COLUMN_AURA);
+                DoCast(me, SPELL_COLUMN_VISUAL, true);
+                m_uiTimer = 5000;
             }
 
-            void UpdateAI(const uint32 /*uiDiff*/) { }
+            void UpdateAI(const uint32 diff) { 
+                if (m_uiTimer <= diff)
+                {
+                    DoCast(SPELL_COLUMN_AURA);
+                    me->Kill(me);
+                } else m_uiTimer -= diff;
+
+            }
 
 
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
+            uint32 m_uiTimer;
         };
 
         CreatureAI* GetAI(Creature* pCreature) const
@@ -780,78 +971,98 @@ class npc_icc_column_stalker : public CreatureScript
 };
 
 
-class npc_icc_trigga_valit : public CreatureScript
+class npc_icc_valithria_trigger : public CreatureScript
 {
     public:
-        npc_icc_trigga_valit() : CreatureScript("npc_icc_trigga_valit") { }
+        npc_icc_valithria_trigger() : CreatureScript("npc_icc_valithria_trigger") { }
 
-        struct npc_icc_trigga_valitAI : public ScriptedAI
+        struct npc_icc_valithria_triggerAI : public ScriptedAI
         {
-            npc_icc_trigga_valitAI(Creature* pCreature) : ScriptedAI(pCreature)
+            npc_icc_valithria_triggerAI(Creature* creature) : ScriptedAI(creature)
             {
-                pInstance = pCreature->GetInstanceScript();
+                instance = creature->GetInstanceScript();
             }
-
-            uint8 timer;
 
             void Reset()
             {
-               me->SetVisible(false);
-               me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_SELECTABLE);
-               timer = 500;
-               Valitria_aggro_trigger = 0;
+                me->SetVisible(false);
+                me->SetInCombatWithZone();
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE); 
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE); 
+                
+                events.ScheduleEvent(EVENT_VALITHRIA_TRIGGER, 10000);
+                
+                if(instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != DONE)
+                   instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, NOT_STARTED);
+            }
+            
+            void MoveInLineOfSight(Unit *who)
+            {
+                Player* player = (Player*) who;
+                if(player->isGameMaster())
+                    return;
+                if (instance && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != IN_PROGRESS
+                    && instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != DONE){
+                    if(me->IsWithinDistInMap(who, 30) && who->isAlive()){
+                        instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, IN_PROGRESS);
+                        sLog->outError("Trigger, set vali in progress");
+                    }
+                }
+                
             }
 
             void UpdateAI(const uint32 diff)
             {
-                if (!UpdateVictim())
+                events.Update(diff);
+
+                if (!instance || instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != IN_PROGRESS)
+                {
+                    //sLog->outError("Trigger: Vali not in progress");                
                     return;
-
-                    if (timer <= diff)
+                }
+                if (events.ExecuteEvent() == EVENT_VALITHRIA_TRIGGER)
+                {
+                    //if(instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != DONE)
+                    //    instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, IN_PROGRESS);
+                    
+                    if (instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == IN_PROGRESS)
                     {
-                        Valitria_aggro_trigger = 1;
-                        timer = 500;
-
-                       if (Valitria_aggro_trigger == 1)
-                        {
-                            // DoScriptText(SAY_AGGRO, me);
-
-
-                            Unit* valitria_m = Unit::GetUnit((*me),pValithriaGIUID);
-                            combat_trigger = me->SummonCreature(CREATURE_COMBAT_TRIGGER, me->GetPositionX(), me->GetPositionY(),me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
-
-                            valitria_m->AddThreat(combat_trigger, 10000000.0f);
-                            combat_trigger->AddThreat(valitria_m, 10000000.0f);
-                            //valitria_m->AI()->AttackStart(combat_trigger);
-                            combat_trigger->AI()->AttackStart(valitria_m);
-
-                            me->Kill(me);
-                        }
-
-                    } else timer -= diff;
-              }
+                        Unit* valithria = Unit::GetUnit((*me), instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
+                        valithria->AddThreat(me, 10000000.0f);
+                        me->AddThreat(valithria, 10000000.0f);
+                        valithria->GetAI()->AttackStart(me);
+                        AttackStart(valithria);
+                        events.ScheduleEvent(EVENT_VALITHRIA_TRIGGER, 10000);
+                    }
+                }
+            }
 
         private:
-            InstanceScript* pInstance;
+            InstanceScript* instance;
+            EventMap events;
         };
 
         CreatureAI* GetAI(Creature* pCreature) const
         {
-            return new npc_icc_trigga_valitAI(pCreature);
+            return new npc_icc_valithria_triggerAI(pCreature);
         }
 };
 
 void AddSC_boss_valithria()
 {
     new boss_valithria;
-    new npc_skellmage_icc; //not sure
-    new npc_fireskell_icc; //not sure
-    new npc_dreamportal_icc;
+    new npc_valithria_alternative;
+    new npc_icc_valithria_trigger;
+    
     new npc_suppressor_icc;
-    new npc_manavoid_icc;
+    new npc_skellmage_icc; 
+    new npc_fireskell_icc; 
     new npc_glutabomination_icc;
     new npc_blistzombie_icc;
+
+    new npc_dreamportal_icc;
     new npc_dreamcloud_icc;
+    new npc_manavoid_icc;
     new npc_icc_column_stalker;
-    new npc_icc_trigga_valit;
 }

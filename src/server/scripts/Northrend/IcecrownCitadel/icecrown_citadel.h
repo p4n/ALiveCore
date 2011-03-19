@@ -93,7 +93,7 @@ enum DataTypes
     DATA_BLOOD_QUICKENING_STATE     = 29,
     DATA_HEROIC_ATTEMPTS            = 30,
 };
-
+#define MAX_ENCOUNTER 12
 enum CreaturesIds
 {
     // At Light's Hammer
