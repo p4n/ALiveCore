@@ -18,10 +18,9 @@
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
-#include "SpellScript.h"
 #include "SpellAuras.h"
-#include "icecrown_citadel.h"
 #include "MapManager.h"
+#include "icecrown_citadel.h"
 
 enum ScriptTexts
 {
@@ -199,9 +198,9 @@ class boss_lord_marrowgar : public CreatureScript
                         case EVENT_BONE_STORM_MOVE:
                         {
                             events.ScheduleEvent(EVENT_BONE_STORM_MOVE, boneStormDuration/3);
-                            Unit* unit = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                            Unit* unit = SelectTarget(SELECT_TARGET_RANDOM, 1);
                             if (!unit)
-                                unit = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                                unit = SelectTarget(SELECT_TARGET_RANDOM, 0);
                             if (unit)
                                 me->GetMotionMaster()->MovePoint(POINT_TARGET_BONESTORM_PLAYER, unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ());
                             break;
@@ -252,9 +251,9 @@ class boss_lord_marrowgar : public CreatureScript
             }
 
         private:
+            Position coldflameLastPos;
             uint32 boneStormDuration;
             float baseSpeed;
-            Position coldflameLastPos;
             bool introDone;
             bool boneSlice;
         };

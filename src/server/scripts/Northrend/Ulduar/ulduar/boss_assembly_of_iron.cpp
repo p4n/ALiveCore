@@ -30,30 +30,47 @@ enum Spells
     SPELL_SUPERCHARGE                           = 61920,
     SPELL_BERSERK                               = 47008,    // Hard enrage, don't know the correct ID.
 
-    // Steelbreaker
-    SPELL_HIGH_VOLTAGE                          = 61890,
-    SPELL_FUSION_PUNCH                          = 61903,
-    SPELL_STATIC_DISRUPTION                     = 44008, //63494
-    SPELL_OVERWHELMING_POWER                    = 64637,
-    SPELL_ELECTRICAL_CHARGE                     = 61902,
-
     // Runemaster Molgeim
-    SPELL_SHIELD_OF_RUNES                       = 62274,
-    SPELL_RUNE_OF_POWER                         = 61973,
     SPELL_RUNE_OF_POWER_VISUAL                  = 61974,
-    SPELL_RUNE_OF_DEATH                         = 62269,
-    SPELL_RUNE_OF_SUMMONING                     = 62273,
     SPELL_RUNE_OF_SUMMONING_VISUAL              = 62019,
-    SPELL_RUNE_OF_SUMMONING_SUMMON              = 62020,
     SPELL_LIGHTNING_BLAST                       = 62054,
 
     // Stormcaller Brundir
-    SPELL_CHAIN_LIGHTNING                       = 61879,
-    SPELL_OVERLOAD                              = 61869,
-    SPELL_LIGHTNING_WHIRL                       = 61915,
-    SPELL_LIGHTNING_TENDRILS                    = 61887,
     SPELL_LIGHTNING_TENDRILS_SELF_VISUAL        = 61883,
-    SPELL_STORMSHIELD                           = 64187
+    
+    // Steelbreaker
+    SPELL_HIGH_VOLTAGE = 61890,
+    SPELL_HIGH_VOLTAGE_H = 63498,
+    SPELL_FUSION_PUNCH = 61903,
+    SPELL_FUSION_PUNCH_H = 63493,
+    SPELL_STATIC_DISRUPTION = 44008,
+    SPELL_STATIC_DISRUPTION_H = 63494,
+    SPELL_OVERWHELMING_POWER_H = 61888,
+    SPELL_OVERWHELMING_POWER = 64637,
+    SPELL_ELECTRICAL_CHARGE = 61902,
+
+    // Runemaster Molgeim
+    SPELL_SHIELD_OF_RUNES = 62274,
+    SPELL_SHIELD_OF_RUNES_H = 63489,
+    SPELL_SUMMON_RUNE_OF_POWER = 63513,
+    SPELL_RUNE_OF_POWER = 61974,
+    SPELL_RUNE_OF_DEATH = 62269,
+    SPELL_RUNE_OF_SUMMONING = 62273, // This is the spell that summons the rune
+    SPELL_RUNE_OF_SUMMONING_VIS = 62019, // Visual
+    SPELL_RUNE_OF_SUMMONING_SUMMON = 62020, // Spell that summons
+    SPELL_LIGHTNING_ELEMENTAL_PASSIVE = 62052,
+    SPELL_LIGHTNING_ELEMENTAL_PASSIVE_H = 63492,
+
+    // Stormcaller Brundir
+    SPELL_CHAIN_LIGHTNING_N = 61879,
+    SPELL_CHAIN_LIGHTNING_H = 63479,
+    SPELL_OVERLOAD = 61869,
+    SPELL_OVERLOAD_H = 63481,
+    SPELL_LIGHTNING_WHIRL = 61915,
+    SPELL_LIGHTNING_WHIRL_H = 63483,
+    SPELL_LIGHTNING_TENDRILS = 61887,
+    SPELL_LIGHTNING_TENDRILS_H = 63486,
+    SPELL_STORMSHIELD = 64187,
 };
 
 enum eEnums
@@ -244,6 +261,22 @@ public:
             events.SetPhase(phase);
             events.ScheduleEvent(EVENT_ENRAGE, 900000);
             events.ScheduleEvent(EVENT_FUSION_PUNCH, 15000);
+            DoAction(EVENT_UPDATEPHASE);
+        }
+
+        void DoAction(const int32 action)
+        {
+            switch (action)
+            {
+                case EVENT_UPDATEPHASE:
+                    events.SetPhase(++phase);
+                    events.RescheduleEvent(EVENT_FUSION_PUNCH, 15000);
+                    if (phase >= 2)
+                        events.RescheduleEvent(EVENT_STATIC_DISRUPTION, 30000);
+                    if (phase >= 3)
+                        events.RescheduleEvent(EVENT_OVERWHELMING_POWER, rand()%5000);
+                break;
+            }
         }
 
         void JustDied(Unit* /*Killer*/)
@@ -392,6 +425,8 @@ public:
             events.ScheduleEvent(EVENT_RUNE_OF_POWER, 20000);
         }
 
+
+
         void JustDied(Unit* /*Killer*/)
         {
             DoScriptText(RAND(SAY_MOLGEIM_DEATH_1, SAY_MOLGEIM_DEATH_2), me);
@@ -500,6 +535,15 @@ public:
                     // Add HardMode Loot
                     me->AddLootMode(LOOT_MODE_HARD_MODE_1);
                     break;
+                case EVENT_UPDATEPHASE:
+                    events.SetPhase(++phase);
+                    events.RescheduleEvent(EVENT_SHIELD_OF_RUNES, 27000);
+                    events.RescheduleEvent(EVENT_RUNE_OF_POWER, 60000);
+                    if (phase >= 2)
+                        events.RescheduleEvent(EVENT_RUNE_OF_DEATH, 30000);
+                    if (phase >= 3)
+                        events.RescheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(20000,30000));
+                	break;
             }
         }
     };
@@ -729,8 +773,10 @@ public:
                         break;
                     case EVENT_CHAIN_LIGHTNING:
                         if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                            DoCast(pTarget, SPELL_CHAIN_LIGHTNING);
+                            DoCast(pTarget, RAID_MODE(SPELL_CHAIN_LIGHTNING_N , SPELL_CHAIN_LIGHTNING_H));
                         events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(4000, 6000));
+
+//                        events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(9000,17000));
                         break;
                     case EVENT_OVERLOAD:
                         me->MonsterTextEmote(EMOTE_OVERLOAD, 0, true);
