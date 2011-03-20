@@ -670,7 +670,7 @@ public:
 
             if (uiPlagueTimer <= uiDiff)
             {
-                if (Unit *pAffected = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pAffected = SelectTarget(SELECT_TARGET_RANDOM,0))
                 {
                     DoCast(pAffected, SPELL_BLOODPLAGUE);
                     AffectedGUID = pAffected->GetGUID();
@@ -680,7 +680,7 @@ public:
 
             if (uiBloodBoilTimer <= uiDiff)
             {
-                if (Unit *pAffected = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit *pAffected = SelectTarget(SELECT_TARGET_RANDOM,0))
                 {
                     DoCast(pAffected, SPELL_BLOODBOOIL);
                     AffectedGUID = pAffected->GetGUID();

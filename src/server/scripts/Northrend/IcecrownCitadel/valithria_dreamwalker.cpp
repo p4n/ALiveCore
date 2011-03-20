@@ -627,7 +627,7 @@ class npc_fireskell_icc : public CreatureScript
 
                 if (m_uiFireballTimer <= diff)
                 {
-                    if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                    if(Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
                         DoCast(pTarget, SPELL_FIREBALL);
                     m_uiFireballTimer = 5000;
                 } else m_uiFireballTimer -= diff;

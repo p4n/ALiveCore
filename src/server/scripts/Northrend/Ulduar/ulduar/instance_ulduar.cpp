@@ -18,20 +18,6 @@
 #include "ScriptPCH.h"
 #include "ulduar.h"
 
-enum eGameObjects
-{
-    GO_KOLOGARN_CHEST_HERO = 195047,
-    GO_KOLOGARN_CHEST = 195046,
-    GO_THORIM_CHEST_HERO = 194315,
-    GO_THORIM_CHEST = 194314,
-    GO_HODIR_CHEST_HERO = 194308,
-    GO_HODIR_CHEST = 194307,
-    GO_FREYA_CHEST_HERO = 194325,
-    GO_FREYA_CHEST = 194324,
-    GO_LEVIATHAN_DOOR = 194905,
-    GO_LEVIATHAN_GATE = 194630,
-    GO_VEZAX_DOOR = 194750,
-};
 
 static const DoorData doorData[] =
 {
@@ -79,6 +65,9 @@ public:
         uint64 uiThorimChestGUID;
         uint64 uiHodirChestGUID;
         uint64 uiFreyaChestGUID;
+		uint64 uiLeftArmGUID;
+        uint64 uiRightArmGUID;
+		uint64 uiKologarnBridgeGUID;
 
 		uint64 uiNorgannon;
 		uint64 uiSteelbreaker;

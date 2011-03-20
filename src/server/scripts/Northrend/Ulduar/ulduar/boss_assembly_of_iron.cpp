@@ -95,7 +95,8 @@ enum eEnums
     EVENT_ENDFLIGHT,
     EVENT_GROUND,
     EVENT_LAND,
-    EVENT_MOVE_POS
+    EVENT_MOVE_POS,
+	EVENT_UPDATEPHASE
 };
 
 enum Actions
@@ -279,6 +280,7 @@ public:
             }
         }
 
+
         void JustDied(Unit* /*Killer*/)
         {
             DoScriptText(RAND(SAY_STEELBREAKER_DEATH_1, SAY_STEELBREAKER_DEATH_2), me);
@@ -329,7 +331,7 @@ public:
                         events.ScheduleEvent(EVENT_FUSION_PUNCH, urand(15000, 20000));
                         break;
                     case EVENT_STATIC_DISRUPTION:
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_STATIC_DISRUPTION);
                         events.ScheduleEvent(EVENT_STATIC_DISRUPTION, 20000 + (rand()%20)*1000);
                         break;
@@ -343,7 +345,7 @@ public:
 
             DoMeleeAttackIfReady();
         }
-
+/*
         void DoAction(const int32 action)
         {
             switch (action)
@@ -362,6 +364,7 @@ public:
                     break;
             }
         }
+*/
     };
 
 };
@@ -501,13 +504,13 @@ public:
                         break;
                     case EVENT_RUNE_OF_DEATH:
                         DoScriptText(SAY_MOLGEIM_RUNE_DEATH, me);
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_RUNE_OF_DEATH);
                         events.ScheduleEvent(EVENT_RUNE_OF_DEATH, 30000);
                         break;
                     case EVENT_RUNE_OF_SUMMONING:
                         DoScriptText(SAY_MOLGEIM_SUMMON, me);
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, SPELL_RUNE_OF_SUMMONING);
                         events.ScheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(40000, 50000));
                         break;
@@ -772,7 +775,7 @@ public:
                         DoCast(SPELL_BERSERK);
                         break;
                     case EVENT_CHAIN_LIGHTNING:
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(pTarget, RAID_MODE(SPELL_CHAIN_LIGHTNING_N , SPELL_CHAIN_LIGHTNING_H));
                         events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(4000, 6000));
 
@@ -802,7 +805,7 @@ public:
                         events.ScheduleEvent(EVENT_LIGHTNING_TENDRILS, 90000);
                         break;
                     case EVENT_FLIGHT:
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             me->GetMotionMaster()->MovePoint(0, pTarget->GetPositionX(), pTarget->GetPositionY(), 435);
                         events.ScheduleEvent(EVENT_FLIGHT, 6000);
                         break;

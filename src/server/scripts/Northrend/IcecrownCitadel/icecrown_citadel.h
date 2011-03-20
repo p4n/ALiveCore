@@ -92,6 +92,9 @@ enum DataTypes
     DATA_TEAM_IN_INSTANCE           = 28,
     DATA_BLOOD_QUICKENING_STATE     = 29,
     DATA_HEROIC_ATTEMPTS            = 30,
+
+	// Valithria
+	DATA_VALITHRIA_CLOUDS           = 31,
 };
 #define MAX_ENCOUNTER 12
 enum CreaturesIds
