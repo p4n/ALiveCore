@@ -50,7 +50,6 @@ enum eTypes
     // Kologarn:
     DATA_LEFT_ARM,
     DATA_RIGHT_ARM,
-    DATA_LEFT_ARM,
 };
 
 enum Encounter
