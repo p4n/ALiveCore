@@ -497,7 +497,7 @@ struct AchievementCriteriaEntry
     {
         uint32  additionalRequirement_type;
         uint32  additionalRequirement_value;
-    } additionalRequrements[MAX_CRITERIA_REQUIREMENTS];
+    } additionalRequirements[MAX_CRITERIA_REQUIREMENTS];
 
     //char*  name[16];                                      // 9-24
     //uint32 name_flags;                                    // 25
@@ -1234,7 +1234,6 @@ struct MapDifficultyEntry
     //char*       difficultyString;                         // 22
 };
 
-
 struct MovieEntry
 {
     uint32      Id;                                         // 0 index
@@ -1680,7 +1679,6 @@ struct StableSlotPricesEntry
     uint32 Price;
 };
 
-
 struct SummonPropertiesEntry
 {
     uint32  Id;                                             // 0
@@ -1690,7 +1688,6 @@ struct SummonPropertiesEntry
     uint32  Slot;                                           // 4, 0-6
     uint32  Flags;                                          // 5
 };
-
 
 #define MAX_TALENT_RANK 5
 #define MAX_PET_TALENT_RANK 3                               // use in calculations, expected <= MAX_TALENT_RANK

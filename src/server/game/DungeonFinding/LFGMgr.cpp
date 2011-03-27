@@ -1955,7 +1955,6 @@ std::string LFGMgr::ConcatenateGuids(LfgGuidList check)
     return o.str();
 }
 
-
 LfgState LFGMgr::GetState(const uint64& guid)
 {
     sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::GetState: [" UI64FMTD "]", guid);

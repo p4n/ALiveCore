@@ -41,11 +41,12 @@ public:
 
         uint32 uiEncounter[MAX_ENCOUNTER];
         std::string m_strInstData;
-        uint8  flag;
 
         uint64 uiLeviathanGUID;
         uint64 uiIgnisGUID;
         uint64 uiRazorscaleGUID;
+        uint64 uiRazorscaleController;
+        uint64 uiRazorHarpoonGUIDs[4];
         uint64 uiExpCommanderGUID;
         uint64 uiXT002GUID;
         uint64 uiAssemblyGUIDs[3];
@@ -107,6 +108,7 @@ public:
             LoadDoorData(doorData);
             uiIgnisGUID             = 0;
             uiRazorscaleGUID        = 0;
+            uiRazorscaleController  = 0;
             uiExpCommanderGUID      = 0;
             uiXT002GUID             = 0;
             uiKologarnGUID          = 0;
@@ -128,10 +130,10 @@ public:
             uiFreyaChestGUID        = 0;
             uiLeviathanGateGUID     = 0;
             uiVezaxDoorGUID         = 0;
-            flag                    = 0;
 
-            memset(&uiEncounter, 0, sizeof(uiEncounter));
-            memset(&uiAssemblyGUIDs, 0, sizeof(uiAssemblyGUIDs));
+            memset(uiEncounter, 0, sizeof(uiEncounter));
+            memset(uiAssemblyGUIDs, 0, sizeof(uiAssemblyGUIDs));
+            memset(uiRazorHarpoonGUIDs, 0, sizeof(uiRazorHarpoonGUIDs));
         }
 
         bool IsEncounterInProgress() const
@@ -164,6 +166,9 @@ public:
                     break;
                 case NPC_RAZORSCALE:
                     uiRazorscaleGUID = creature->GetGUID();
+                    break;
+                case NPC_RAZORSCALE_CONTROLLER:
+                    uiRazorscaleController = creature->GetGUID();
                     break;
                 case NPC_EXPEDITION_COMMANDER:
                     uiExpCommanderGUID = creature->GetGUID();
@@ -275,6 +280,18 @@ public:
                 case GO_VEZAX_DOOR:
                     uiVezaxDoorGUID = go->GetGUID();
                     HandleGameObject(NULL, false, go);
+                    break;
+                case GO_RAZOR_HARPOON_1:
+                    uiRazorHarpoonGUIDs[0] = go->GetGUID();
+                    break;
+                case GO_RAZOR_HARPOON_2:
+                    uiRazorHarpoonGUIDs[1] = go->GetGUID();
+                    break;
+                case GO_RAZOR_HARPOON_3:
+                    uiRazorHarpoonGUIDs[2] = go->GetGUID();
+                    break;
+                case GO_RAZOR_HARPOON_4:
+                    uiRazorHarpoonGUIDs[3] = go->GetGUID();
                     break;
             }
         }
@@ -390,15 +407,17 @@ public:
                 case TYPE_LEVIATHAN:            return uiLeviathanGUID;
                 case TYPE_IGNIS:                return uiIgnisGUID;
                 case TYPE_RAZORSCALE:           return uiRazorscaleGUID;
+                case DATA_RAZORSCALE_CONTROL:   return uiRazorscaleController;
                 case TYPE_XT002:                return uiXT002GUID;
 
                 // razorscale expedition commander
                 case DATA_EXP_COMMANDER:        return uiExpCommanderGUID;
 
+
 				//case DATA_NORGANNON:			return uiNorgannon;
-                case DATA_STEELBREAKER:			return uiSteelbreaker;
-                case DATA_MOLGEIM:				return uiMolgeim;
-                case DATA_BRUNDIR:				return uiBrundir;
+                //case DATA_STEELBREAKER:			return uiSteelbreaker;
+                //case DATA_MOLGEIM:				return uiMolgeim;
+                //case DATA_BRUNDIR:				return uiBrundir;
                 case DATA_KOLOGARN:				return uiKologarn;
                 case DATA_AURIAYA:				return uiAuriaya;
                 case DATA_BRIGHTLEAF:			return uiBrightleaf;
@@ -421,23 +440,19 @@ public:
                 case DATA_YOGGSARON:			return uiYoggSaron;
 				case DATA_SARA:                 return uiSara;
 				case DATA_SARATRANS:            return uiSaraTrans;
+
+                case GO_RAZOR_HARPOON_1:        return uiRazorHarpoonGUIDs[0];
+                case GO_RAZOR_HARPOON_2:        return uiRazorHarpoonGUIDs[1];
+                case GO_RAZOR_HARPOON_3:        return uiRazorHarpoonGUIDs[2];
+                case GO_RAZOR_HARPOON_4:        return uiRazorHarpoonGUIDs[3];
+                // Assembly of Iron
+                case DATA_STEELBREAKER:         return uiAssemblyGUIDs[0];
+                case DATA_MOLGEIM:              return uiAssemblyGUIDs[1];
+                case DATA_BRUNDIR:              return uiAssemblyGUIDs[2];
+
             }
 
             return 0;
-        }
-
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
-        {
-            switch (criteria_id)
-            {
-                case ACHIEVEMENT_CRITERIA_HOT_POCKET_10:
-                    return true;
-                case ACHIEVEMENT_CRITERIA_HOT_POCKET_25:
-                    return true;
-                default:
-                    break;
-            }
-            return false;
         }
 
         uint32 GetData(uint32 type)

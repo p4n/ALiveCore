@@ -951,7 +951,6 @@ public:
 };
 
 
-
 void AddSC_boss_thorim()
 {
     new boss_thorim();
