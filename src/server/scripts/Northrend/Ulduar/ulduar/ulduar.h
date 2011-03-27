@@ -39,17 +39,6 @@ enum eTypes
     TYPE_YOGGSARON              = 12,
     TYPE_ALGALON                = 13,
     TYPE_COLOSSUS               = 14,
-
-    DATA_STEELBREAKER,
-    DATA_MOLGEIM,
-    DATA_BRUNDIR,
-
-    DATA_EXP_COMMANDER,
-    DATA_RAZORSCALE_CONTROL,
-
-    // Kologarn:
-    DATA_LEFT_ARM,
-    DATA_RIGHT_ARM,
 };
 
 enum Encounter
@@ -196,6 +185,16 @@ enum Data64
 	DATA_TRIGGER,
 	DATA_UNV_WACHE,
 	DATA_SARATRANS
+    DATA_STEELBREAKER,
+    DATA_MOLGEIM,
+    DATA_BRUNDIR,
+
+    DATA_EXP_COMMANDER,
+    DATA_RAZORSCALE_CONTROL,
+
+    // Kologarn:
+    DATA_LEFT_ARM,
+    DATA_RIGHT_ARM,	
 };
 
 

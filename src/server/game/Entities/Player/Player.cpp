@@ -2384,25 +2384,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 else
                     data << m_teleport_dest.PositionXYZOStream();
 
-<<<<<<< HEAD
                 GetSession()->SendPacket(&data);
                 SendSavedInstances();
             }
-=======
-            if (!GetSession()->PlayerLogout())
-            {
-                WorldPacket data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
-                data << uint32(mapid);
-                if (m_transport)
-                    data << m_movementInfo.t_pos.PositionXYZOStream();
-                else
-                    data << m_teleport_dest.PositionXYZOStream();
-
-                GetSession()->SendPacket(&data);
-                SendSavedInstances();
-            }
-
->>>>>>> upstream/master
             // move packet sent by client always after far teleport
             // code for finish transfer to new map called in WorldSession::HandleMoveWorldportAckOpcode at client packet
             SetSemaphoreTeleportFar(true);
