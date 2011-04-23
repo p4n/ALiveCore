@@ -161,7 +161,7 @@ class boss_lord_marrowgar : public CreatureScript
                         case EVENT_BONE_SPIKE_GRAVEYARD:
                             if (IsHeroic() || !me->HasAura(SPELL_BONE_STORM)) {
 //                                DoCast(me, SPELL_BONE_SPIKE_GRAVEYARD);
-								uint8 boneSpikeCount = uint8(instance->GetSpawnMode() & 1 ? 3 : 1);
+								uint8 boneSpikeCount = uint8(RAID_MODE<uint32>(1, 3, 1, 3));
                     			for (uint8 i = 0; i < boneSpikeCount; ++i)
                     			{
                         			// select any unit but not the tank
@@ -175,7 +175,7 @@ class boss_lord_marrowgar : public CreatureScript
                         			}
                         			target->CastCustomSpell(69062, SPELLVALUE_BASE_POINT0, 0, target, true);
                     			}
-                    			marrowgarAI->Talk(SAY_BONESPIKE);
+                    			Talk(SAY_BONESPIKE);
                             }
                             events.ScheduleEvent(EVENT_BONE_SPIKE_GRAVEYARD, urand(15000, 20000), EVENT_GROUP_SPECIAL);
                             break;
