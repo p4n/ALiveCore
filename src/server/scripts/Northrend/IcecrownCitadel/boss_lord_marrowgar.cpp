@@ -161,14 +161,14 @@ class boss_lord_marrowgar : public CreatureScript
                         case EVENT_BONE_SPIKE_GRAVEYARD:
                             if (IsHeroic() || !me->HasAura(SPELL_BONE_STORM)) {
 //                                DoCast(me, SPELL_BONE_SPIKE_GRAVEYARD);
-								uint8 boneSpikeCount = uint8(GetCaster()->GetMap()->GetSpawnMode() & 1 ? 3 : 1);
+								uint8 boneSpikeCount = uint8(instance->GetSpawnMode() & 1 ? 3 : 1);
                     			for (uint8 i = 0; i < boneSpikeCount; ++i)
                     			{
                         			// select any unit but not the tank
-                        			Unit* target = marrowgarAI->SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true, -SPELL_IMPALED);
+                        			Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true, -SPELL_IMPALED);
                         			// try the tank only in first iteration
                         			if (!target && !i) {
-                            			target = marrowgarAI->SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true, -SPELL_IMPALED);
+                            			target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true, -SPELL_IMPALED);
                         			}
                         			if (!target) {
                             			return;
