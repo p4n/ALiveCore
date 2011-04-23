@@ -405,6 +405,7 @@ public:
 
 };
 
+
 class mob_swarm_scarab : public CreatureScript
 {
 public:
@@ -472,6 +473,7 @@ public:
 
 };
 
+
 class mob_nerubian_burrower : public CreatureScript
 {
 public:
@@ -511,7 +513,7 @@ public:
             switch (actionId)
             {
                 case ACTION_SHADOW_STRIKE:
-                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                         DoCast(pTarget, SPELL_SHADOW_STRIKE);
                     break;
             }
@@ -548,6 +550,7 @@ public:
     };
 
 };
+
 
 class mob_frost_sphere : public CreatureScript
 {
@@ -628,6 +631,7 @@ public:
     };
 
 };
+
 
 class mob_anubarak_spike : public CreatureScript
 {
